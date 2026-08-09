@@ -1,0 +1,18 @@
+[package]
+name = "cyphra-network"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+cyphra-core = { path = "../core" }
+cyphra-ai = { path = "../ai" }
+tokio = { workspace = true }
+quinn = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+futures = { workspace = true }
+rand = "0.8"

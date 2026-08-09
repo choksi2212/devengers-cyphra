@@ -1,0 +1,19 @@
+[package]
+name = "cyphra-ai"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+cyphra-core = { path = "../core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+# GhostML integration (optional, for model conversion)
+ghost-trees = { path = "../../machine_learning/ghostml_library/ghost-trees", optional = true }
+
+[features]
+default = []
+ghostml-integration = ["ghost-trees"]
