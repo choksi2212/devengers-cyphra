@@ -1,0 +1,74 @@
+# ═══════════════════════════════════════════════════════════════════
+# CYPHRA — .gitignore
+# ═══════════════════════════════════════════════════════════════════
+
+# ─── Build Outputs & Dependencies ─────────────────────────────────
+**/node_modules/
+**/dist/
+**/target/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/.gradle/
+**/.kotlin/
+**/build/
+N:\craftathon\documentation\CYPHRA_COMPLETE_TECHNICAL_DOCUMENT.md
+N:\craftathon\documentation\cyphra_cryptography_spec.md
+
+# ─── Large ML Data (exceeds GitHub 100 MB limit) ──────────────────
+machine_learning/preprocessing/
+machine_learning/datasets/
+
+# ─── Build Tools (4+ GB, download separately) ─────────────────────
+_build-tools/
+
+# ─── Archive (old superseded code) ────────────────────────────────
+_archive/
+
+# ─── IDE & Editor ─────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── Development History (not useful for reviewers) ───────────────
+chat_context.md
+
+# ─── OS Generated Files ──────────────────────────────────────────
+Thumbs.db
+thumbs.db
+.DS_Store
+Desktop.ini
+ehthumbs.db
+
+# ─── Logs & Temp Files ───────────────────────────────────────────
+*.log
+build_log.txt
+temp_css_debug.txt
+
+# ─── Rust Build Artifacts ─────────────────────────────────────────
+**/*.rlib
+**/*.d
+**/*.fingerprint
+
+# ─── Python Virtual Environments ──────────────────────────────────
+venv/
+.env/
+.venv/
+env/
+
+# ─── Environment & Secrets ────────────────────────────────────────
+.env
+.env.local
+.env.production
+*.pem
+*.key
+
+# ─── Package Lock Files (keep package.json, ignore locks for libs)
+# Note: We DO commit package-lock.json for reproducible builds
+# but ignore Cargo.lock for library crates (server binary keeps it)
+rust-libraries/Cargo.lock
+cyphra-wasm/Cargo.lock
+machine_learning/ghostml_library/Cargo.lock
+
