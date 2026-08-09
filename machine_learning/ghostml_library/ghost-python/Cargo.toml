@@ -1,0 +1,19 @@
+[package]
+name = "ghost-python"
+version = "1.0.0"
+edition = "2021"
+
+[lib]
+name = "ghostml"
+crate-type = ["cdylib"]
+
+[dependencies]
+ghost-core = { path = "../ghost-core" }
+ghost-preprocessing = { path = "../ghost-preprocessing" }
+ghost-sampling = { path = "../ghost-sampling" }
+ghost-trees = { path = "../ghost-trees" }
+ghost-ensemble = { path = "../ghost-ensemble" }
+ghost-neural = { path = "../ghost-neural" }
+ndarray = "0.15"
+pyo3 = { version = "0.22", features = ["extension-module"] }
+numpy = "0.22"

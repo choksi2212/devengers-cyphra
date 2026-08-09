@@ -1,0 +1,15 @@
+[package]
+name = "ghost-neural"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+ghost-core = { path = "../ghost-core" }
+ndarray = { workspace = true }
+ndarray-rand = { workspace = true }
+rayon = { workspace = true }
+rand = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
