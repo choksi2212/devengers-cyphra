@@ -1,0 +1,59 @@
+[package]
+name = "veddb-client"
+version = "0.2.0"
+edition = "2021"
+authors = ["CYPHRA Team"]
+description = "Official Rust client library for VedDB v0.2.0 - Hybrid document database with Redis-like caching"
+repository = "https://github.com/cyphra-team/ved-db-rust-client"
+homepage = "https://github.com/cyphra-team/ved-db-rust-client"
+documentation = "https://docs.rs/veddb-client"
+readme = "README.md"
+license = "MIT"
+keywords = ["database", "document-store", "client", "async", "veddb"]
+categories = ["database", "network-programming"]
+exclude = [
+    "examples/",
+    "benches/",
+    ".github/",
+    ".gitignore",
+]
+
+[lib]
+name = "veddb_client"
+path = "src/lib.rs"
+doc = true
+test = true
+bench = true
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+tokio-rustls = "0.24"
+rustls = { version = "0.21", features = ["dangerous_configuration"] }
+rustls-pemfile = "1.0"
+thiserror = "1.0"
+bytes = "1.0"
+tracing = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+async-channel = "1.8"
+tracing-subscriber = { version = "0.3", optional = true }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+hex = "0.4"
+rand = "0.8"
+anyhow = "1.0"
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.2"
+
+[dev-dependencies.criterion]
+version = "0.5"
+features = ["html_reports"]
+
+[[bench]]
+name = "benchmarks"
+harness = false
+
+[features]
+default = ["tracing-subscriber"]
