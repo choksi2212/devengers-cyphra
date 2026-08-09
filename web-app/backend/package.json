@@ -1,0 +1,28 @@
+{
+  "name": "ghost-messenger-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Ghost Messenger with VedDB integration",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "ghost-messenger",
+    "veddb",
+    "backend",
+    "api",
+    "websocket"
+  ],
+  "author": "Ghost Messenger Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "ws": "^8.14.2",
+    "veddb-client": "^0.1.0",
+    "dotenv": "^16.3.1"
+  }
+}
+
