@@ -1,0 +1,208 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-cyphra-border;
+  }
+
+  body {
+    @apply bg-cyphra-bg text-cyphra-text-primary antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0a0f1a;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+  }
+
+  ::selection {
+    background: rgba(14, 165, 233, 0.3);
+    color: #f1f5f9;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-cyphra-accent hover:bg-cyphra-accent-hover text-white text-sm font-medium rounded transition-colors duration-150 active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-cyphra-surface hover:bg-cyphra-border text-cyphra-text-secondary text-sm font-medium rounded border border-cyphra-border transition-colors duration-150 active:scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-3 py-2 text-cyphra-text-secondary hover:text-cyphra-text-primary hover:bg-cyphra-surface text-sm font-medium rounded transition-colors duration-150;
+  }
+
+  .input-primary {
+    @apply w-full px-4 py-2.5 bg-cyphra-bg border border-cyphra-border rounded text-sm text-cyphra-text-primary placeholder-cyphra-text-muted focus:outline-none focus:border-cyphra-accent focus:ring-1 focus:ring-cyphra-accent/30 transition-all duration-150;
+  }
+
+  .card {
+    @apply bg-cyphra-surface border border-cyphra-border rounded p-5 transition-colors duration-150;
+  }
+
+  .card-hover {
+    @apply card hover:border-cyphra-border-light;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply badge bg-cyphra-success-muted text-cyphra-success;
+  }
+
+  .badge-warning {
+    @apply badge bg-cyphra-warning-muted text-cyphra-warning;
+  }
+
+  .badge-danger {
+    @apply badge bg-cyphra-danger-muted text-cyphra-danger;
+  }
+
+  .badge-info {
+    @apply badge bg-cyphra-accent-muted text-cyphra-accent;
+  }
+
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+
+  .status-dot-active {
+    @apply status-dot bg-cyphra-success;
+  }
+
+  .status-dot-warning {
+    @apply status-dot bg-cyphra-warning;
+  }
+
+  .status-dot-danger {
+    @apply status-dot bg-cyphra-danger animate-pulse;
+  }
+}
+
+/* WebGL canvas layer */
+.webgl-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Message animations */
+.message-enter {
+  animation: msgSlideUp 0.25s ease-out;
+}
+
+@keyframes msgSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-exit {
+  animation: msgFadeOut 0.2s ease-out forwards;
+}
+
+@keyframes msgFadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* Typing indicator */
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px;
+}
+
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #94a3b8;
+  opacity: 0.4;
+  animation: typingAnim 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingAnim {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+/* Scan line effect for threat indicators */
+.scan-line {
+  position: relative;
+  overflow: hidden;
+}
+
+.scan-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.05), transparent);
+  animation: scanLine 3s linear infinite;
+}
+
+@keyframes scanLine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Global Nippo font override - must be outside @layer to beat Tailwind preflight */
+html,
+body,
+* {
+  font-family: 'Nippo', sans-serif !important;
+}
+.font-mono,
+code,
+pre,
+kbd,
+samp {
+  font-family: 'JetBrains Mono', Consolas, monospace !important;
+}
