@@ -1,0 +1,18 @@
+{
+  "name": "cyphra-wasm",
+  "type": "module",
+  "collaborators": [
+    "CYPHRA Team"
+  ],
+  "version": "1.0.0",
+  "files": [
+    "cyphra_wasm_bg.wasm",
+    "cyphra_wasm.js",
+    "cyphra_wasm.d.ts"
+  ],
+  "main": "cyphra_wasm.js",
+  "types": "cyphra_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
