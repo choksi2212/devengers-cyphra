@@ -1,0 +1,27 @@
+[package]
+name = "cyphra-protocol"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+cyphra-core = { path = "../core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+bincode = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+blake3 = { workspace = true }
+sha3 = { workspace = true }
+getrandom = { workspace = true }
+libsodium-sys = { workspace = true }
+hex = "0.4"
+
+# Crypto dependencies
+rand = "0.8"
+
+# Post-Quantum Cryptography
+pqc_kyber = "0.7"
+# pqcrypto-dilithium = "0.5"  # Requires C compiler toolchain — Ed25519 via libsodium used instead
+# pqcrypto-traits = "0.3"
