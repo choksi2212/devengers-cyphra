@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+lightgbm>=4.6.0
+xgboost>=3.0.0
+catboost>=1.2.0
+scikit-learn>=1.8.0
+numpy>=1.24.0
