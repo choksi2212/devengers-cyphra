@@ -1,0 +1,50 @@
+[package]
+name = "cyphra-server"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "REST API microservice exposing CYPHRA cryptographic libraries"
+
+[[bin]]
+name = "cyphra-server"
+path = "src/main.rs"
+
+[dependencies]
+# Internal crates — using them as-is, untouched
+cyphra-core = { path = "../core" }
+cyphra-protocol = { path = "../protocol" }
+cyphra-ai = { path = "../ai" }
+cyphra-network = { path = "../network" }
+cyphra-mixnet = { path = "../mixnet" }
+
+# HTTP server
+axum = { version = "0.7", features = ["json"] }
+tokio = { workspace = true }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Error handling
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# Crypto dependencies (same as workspace)
+blake3 = { workspace = true }
+libsodium-sys = { workspace = true }
+getrandom = { workspace = true }
+hex = "0.4"
+
+# Timestamp
+chrono = { version = "0.4", features = ["serde"] }
+
+# VedDB client (proper async Rust client with TLS + connection pool)
+veddb-client = { path = "../../veddb-cyphra" }
+bytes = "1.0"
