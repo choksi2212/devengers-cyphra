@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Cyphra</title>
+
+  <!-- PWA / iOS Meta -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Cyphra" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0A0F1A" />
+  <meta name="description" content="Military-grade encrypted messenger" />
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png" />
+  <link rel="apple-touch-icon" sizes="120x120" href="icons/icon-120.png" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+
+  <style>
+    /* ── Reset ──────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; width: 100%; overflow: hidden; }
+
+    /* ── Design Tokens ─ exact Android theme colours ────────────────── */
+    :root {
+      --bg:              #0A0F1A;
+      --surface:         #111827;
+      --surface-high:    #1B1F2B;
+      --accent:          #0EA5E9;
+      --accent-hover:    #0284C7;
+      --border:          #1E293B;
+      --border-light:    #334155;
+      --text-primary:    #DEE2F2;
+      --text-secondary:  #94A3B8;
+      --text-muted:      #64748B;
+      --success:         #10B981;
+      --warning:         #F59E0B;
+      --danger:          #EF4444;
+      --teal:            #14B8A6;
+      --cyan:            #06B6D4;
+
+      /* Safe areas (iOS notch / home bar) */
+      --safe-top:    env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    /* ── Base ───────────────────────────────────────────────────────── */
+    body {
+      font-family: -apple-system, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+    }
+
+    /* ── App Shell ──────────────────────────────────────────────────── */
+    #app {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Screen layers ──────────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity  0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .screen.hidden { transform: translateX(100%); opacity: 0; pointer-events: none; }
+    .screen.slide-left { transform: translateX(-30%); opacity: 0; pointer-events: none; }
+
+    /* ── Status bar spacer ──────────────────────────────────────────── */
+    .safe-top    { height: var(--safe-top); background: var(--bg); flex-shrink: 0; }
+    .safe-bottom { height: var(--safe-bottom); background: var(--bg); flex-shrink: 0; }
+
+    /* ── Top Bar ────────────────────────────────────────────────────── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      padding: 10px 8px;
+      border-bottom: 0.5px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+      gap: 4px;
+    }
+    .top-bar h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      flex: 1;
+      padding: 0 4px;
+      letter-spacing: -0.3px;
+    }
+
+    /* ── Icon Buttons ───────────────────────────────────────────────── */
+    .icon-btn {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: transparent; cursor: pointer;
+      border-radius: 50%;
+      color: var(--text-secondary);
+      transition: background 0.15s, color 0.15s;
+      -webkit-appearance: none;
+      flex-shrink: 0;
+    }
+    .icon-btn:active { background: var(--surface-high); color: var(--accent); }
+    .icon-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+    /* ── Divider ────────────────────────────────────────────────────── */
+    .divider { height: 0.5px; background: var(--border); flex-shrink: 0; }
+
+    /* ── ─── LOGIN SCREEN ─── ───────────────────────────────────────── */
+    #screen-login {
+      justify-content: center;
+      align-items: center;
+      padding: 32px 28px;
+      padding-top: calc(var(--safe-top) + 32px);
+      padding-bottom: calc(var(--safe-bottom) + 32px);
+      gap: 0;
+      overflow-y: auto;
+    }
+
+    .login-logo {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, var(--accent), var(--teal));
+      border-radius: 22px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(14, 165, 233, 0.35);
+    }
+    .login-logo svg { width: 44px; height: 44px; fill: white; }
+
+    .login-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent), var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
+    .login-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 36px;
+    }
+
+    .field-group { width: 100%; margin-bottom: 14px; }
+    .field-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .field-label svg { width: 12px; height: 12px; fill: var(--accent); }
+
+    .text-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 16px; /* 16px prevents iOS zoom */
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .text-input:focus { border-color: var(--accent); }
+    .text-input::placeholder { color: var(--text-muted); }
+
+    .login-error {
+      color: var(--danger);
+      font-size: 13px;
+      text-align: center;
+      min-height: 20px;
+      margin-bottom: 4px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--teal));
+      border: none; border-radius: 14px;
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity 0.15s, transform 0.1s;
+      -webkit-appearance: none;
+      box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
+    }
+    .btn-primary:active { opacity: 0.8; transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.5; }
+    .btn-primary.loading::after {
+      content: '';
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-left: 8px; vertical-align: middle;
+    }
+
+    .login-footer {
+      margin-top: 24px;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .login-footer svg { width: 12px; height: 12px; fill: var(--accent); }
+
+    /* ── ─── CHAT LIST SCREEN ─── ────────────────────────────────────── */
+    #screen-chatlist { }
+
+    .chat-list-scroll {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .chat-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      gap: 12px;
+      border-bottom: 0.5px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .chat-item:active { background: var(--surface); }
+
+    .avatar {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--teal));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+    .avatar.small {
+      width: 38px; height: 38px;
+      font-size: 14px;
+    }
+
+    .chat-item-info { flex: 1; min-width: 0; }
+    .chat-item-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .chat-item-preview {
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+    .chat-item-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 40px;
+      color: var(--text-muted);
+    }
+    .empty-state svg { width: 48px; height: 48px; fill: var(--border-light); }
+    .empty-state p { font-size: 14px; text-align: center; line-height: 1.5; }
+
+    /* FAB */
+    .fab {
+      position: absolute;
+      bottom: calc(var(--safe-bottom) + 20px);
+      right: 20px;
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--teal));
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(14, 165, 233, 0.4);
+      transition: transform 0.15s, box-shadow 0.15s;
+      color: white;
+      z-index: 10;
+    }
+    .fab:active { transform: scale(0.92); box-shadow: 0 2px 10px rgba(14, 165, 233, 0.3); }
+    .fab svg { width: 24px; height: 24px; fill: white; }
+
+    /* ── ─── CHAT SCREEN ─── ─────────────────────────────────────────── */
+    #screen-chat { }
+
+    .chat-top-bar {
+      display: flex; align-items: center;
+      padding: 8px 4px;
+      padding-top: calc(var(--safe-top) + 8px);
+      border-bottom: 0.5px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+      gap: 4px;
+    }
+    .chat-contact-info { flex: 1; min-width: 0; padding: 0 4px; }
+    .chat-contact-name {
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .chat-contact-status {
+      font-size: 10px;
+      color: var(--accent);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: flex; align-items: center; gap: 4px;
+      margin-top: 1px;
+    }
+    .chat-contact-status svg { width: 10px; height: 10px; fill: var(--accent); }
+
+    /* Messages area */
+    .messages-area {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Message bubbles */
+    .msg-row {
+      display: flex;
+      flex-direction: column;
+      animation: msgIn 0.2s ease-out;
+    }
+    .msg-row.mine { align-items: flex-end; }
+    .msg-row.theirs { align-items: flex-start; }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .bubble {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      position: relative;
+    }
+    .mine .bubble {
+      background: var(--accent);
+      border-bottom-right-radius: 4px;
+      color: #001E2F;
+    }
+    .theirs .bubble {
+      background: var(--surface);
+      border-bottom-left-radius: 4px;
+      color: var(--text-primary);
+    }
+
+    .bubble-sender {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 3px;
+    }
+    .mine .bubble-sender { display: none; }
+
+    .bubble-text {
+      font-size: 15px;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .bubble-meta {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 4px;
+      justify-content: flex-end;
+    }
+
+    .bubble-time {
+      font-size: 10px;
+      font-family: 'SF Mono', monospace;
+      opacity: 0.6;
+    }
+
+    .bubble-lock { width: 9px; height: 9px; opacity: 0.5; }
+    .bubble-lock svg { width: 9px; height: 9px; }
+
+    .status-icon { width: 12px; height: 12px; }
+    .status-icon svg { width: 12px; height: 12px; }
+    .status-icon.read svg { fill: #00BFFF; }
+    .status-icon.sent svg { fill: rgba(0,30,47,0.5); }
+
+    /* Countdown */
+    .countdown {
+      display: flex; align-items: center; gap: 3px;
+      font-size: 11px;
+      font-family: 'SF Mono', monospace;
+      color: var(--warning);
+    }
+    .countdown svg { width: 11px; height: 11px; fill: var(--warning); }
+
+    /* Self-destruct banner */
+    .sd-banner {
+      background: rgba(245, 158, 11, 0.1);
+      border-bottom: 0.5px solid rgba(245, 158, 11, 0.3);
+      padding: 6px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 13px; color: var(--warning);
+      flex-shrink: 0;
+    }
+    .sd-banner-left { display: flex; align-items: center; gap: 6px; }
+    .sd-banner svg { width: 13px; height: 13px; fill: var(--warning); }
+    .sd-banner.hidden { display: none; }
+    .sd-cancel {
+      background: none; border: none; color: var(--warning);
+      font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
+      text-transform: uppercase; cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    /* Chat input */
+    .chat-input-area {
+      background: var(--bg);
+      border-top: 0.5px solid var(--border);
+      padding: 8px;
+      padding-bottom: calc(var(--safe-bottom) + 8px);
+      flex-shrink: 0;
+      display: flex; flex-direction: column; gap: 0;
+    }
+
+    .chat-input-row {
+      display: flex; align-items: flex-end;
+      gap: 6px;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 11px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--text-primary);
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+      resize: none;
+      max-height: 96px;
+      overflow-y: auto;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+      line-height: 1.4;
+    }
+    .chat-input:focus { border-color: var(--accent); }
+    .chat-input::placeholder { color: var(--text-muted); }
+
+    .send-btn {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      flex-shrink: 0;
+      -webkit-appearance: none;
+    }
+    .send-btn.active {
+      background: var(--accent);
+    }
+    .send-btn.inactive {
+      background: var(--surface);
+    }
+    .send-btn.active svg { fill: #001E2F; }
+    .send-btn.inactive svg { fill: var(--text-muted); }
+    .send-btn:active { transform: scale(0.92); }
+    .send-btn svg { width: 20px; height: 20px; }
+
+    .timer-btn {
+      flex-shrink: 0;
+    }
+    .timer-btn.active { color: var(--warning) !important; }
+
+    /* ── ─── SETTINGS SCREEN ─── ─────────────────────────────────────── */
+    #screen-settings { }
+
+    .settings-scroll {
+      flex: 1; overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 16px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+
+    .settings-profile-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex; align-items: center; gap: 16px;
+    }
+
+    .settings-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .settings-section-title {
+      padding: 12px 16px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .settings-row {
+      display: flex; align-items: center;
+      padding: 14px 16px;
+      gap: 12px;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-row-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .settings-row-icon svg { width: 16px; height: 16px; fill: white; }
+    .settings-row-label { flex: 1; }
+    .settings-row-label span:first-child {
+      display: block; font-size: 15px; color: var(--text-primary); font-weight: 500;
+    }
+    .settings-row-label span:last-child {
+      display: block; font-size: 12px; color: var(--text-muted); margin-top: 1px;
+    }
+    .settings-row-label span:only-child::after { content: none; }
+    .chevron { width: 16px; height: 16px; fill: var(--text-muted); }
+
+    .btn-danger {
+      width: 100%;
+      padding: 16px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 14px;
+      color: var(--danger);
+      font-size: 15px; font-weight: 700;
+      cursor: pointer; margin-top: 4px;
+      -webkit-appearance: none;
+      transition: background 0.15s;
+    }
+    .btn-danger:active { background: rgba(239,68,68,0.2); }
+
+    /* ── ─── ADD CONTACT DIALOG ─── ───────────────────────────────────── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 100;
+      transition: opacity 0.25s;
+    }
+    .overlay.hidden { opacity: 0; pointer-events: none; }
+
+    .dialog {
+      background: var(--surface-high);
+      border-radius: 20px 20px 0 0;
+      border: 1px solid var(--border-light);
+      border-bottom: none;
+      padding: 20px;
+      padding-bottom: calc(var(--safe-bottom) + 20px);
+      width: 100%;
+      transform: translateY(0);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .overlay.hidden .dialog { transform: translateY(100%); }
+
+    .dialog-handle {
+      width: 36px; height: 4px;
+      background: var(--border-light);
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+    .dialog-title {
+      font-size: 18px; font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .dialog-subtitle {
+      font-size: 13px; color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .dialog-error {
+      font-size: 13px; color: var(--danger);
+      min-height: 16px; margin-bottom: 8px;
+    }
+    .dialog-success {
+      font-size: 13px; color: var(--success);
+      min-height: 16px; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .dialog-success svg { width: 14px; height: 14px; fill: var(--success); }
+
+    .dialog-actions {
+      display: flex; gap: 10px; margin-top: 16px;
+    }
+    .btn-outline {
+      flex: 1; padding: 14px;
+      background: transparent;
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      color: var(--text-secondary);
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; -webkit-appearance: none;
+    }
+    .btn-outlined-accent {
+      flex: 1; padding: 14px;
+      background: var(--accent);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 14px; font-weight: 700;
+      cursor: pointer; -webkit-appearance: none;
+      transition: opacity 0.15s;
+    }
+    .btn-outlined-accent:disabled { opacity: 0.5; }
+
+    /* ── ─── SERVER CONFIG DIALOG ─── ─────────────────────────────────── */
+    #overlay-server { }
+
+    /* ── Install Banner ─────────────────────────────────────────────── */
+    #install-banner {
+      position: fixed;
+      bottom: calc(var(--safe-bottom) + 12px);
+      left: 12px; right: 12px;
+      background: var(--surface-high);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex; align-items: center; gap: 12px;
+      z-index: 200;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      animation: slideUp 0.4s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    #install-banner.hidden { display: none; }
+    #install-banner-text { flex: 1; font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
+    #install-banner-text strong { color: var(--text-primary); font-size: 14px; display: block; margin-bottom: 2px; }
+    .btn-install {
+      background: var(--accent); border: none; border-radius: 10px;
+      color: white; font-size: 13px; font-weight: 700;
+      padding: 10px 16px; cursor: pointer; white-space: nowrap;
+    }
+
+    /* ── Toast ──────────────────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: calc(var(--safe-bottom) + 80px);
+      left: 50%; transform: translateX(-50%);
+      background: var(--surface-high);
+      border: 1px solid var(--border-light);
+      color: var(--text-primary);
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      z-index: 300;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; }
+
+    /* ── Loading Spinner ────────────────────────────────────────────── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+
+    /* ── Enc badge ──────────────────────────────────────────────────── */
+    .enc-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 9px; color: var(--accent); letter-spacing: 1px;
+      padding: 3px 8px;
+      background: rgba(14, 165, 233, 0.1);
+      border: 1px solid rgba(14, 165, 233, 0.25);
+      border-radius: 20px;
+      margin: 6px auto 0;
+    }
+    .enc-badge svg { width: 8px; height: 8px; fill: var(--accent); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 0; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ LOGIN SCREEN ═══ -->
+  <div id="screen-login" class="screen">
+    <div class="login-logo">
+      <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4c1.4 0 2.8.47 3.93 1.25L5.25 16.93C4.47 15.63 4 14.06 4 12.43V6.26L12 5zm.07 14c-1.4 0-2.8-.47-3.93-1.25l10.68-10.68C19.6 8.37 20 9.94 20 11.57v6.17L12.07 19z"/></svg>
+    </div>
+    <div class="login-title">CYPHRA</div>
+    <div class="login-subtitle">Military-Grade Encrypted Messenger</div>
+
+    <div class="field-group">
+      <div class="field-label">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        Email Address
+      </div>
+      <input id="input-email" class="text-input" type="email" placeholder="your@email.com"
+             autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false" />
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">
+        <svg viewBox="0 0 24 24"><path d="M12 1C8.676 1 6 3.676 6 7v1H4v15h16V8h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v1H8V7c0-2.276 1.724-4 4-4zm0 9a2 2 0 110 4 2 2 0 010-4z"/></svg>
+        Password
+      </div>
+      <input id="input-password" class="text-input" type="password" placeholder="••••••••••"
+             autocomplete="current-password" />
+    </div>
+
+    <div id="login-error" class="login-error"></div>
+    <button id="btn-login" class="btn-primary">AUTHENTICATE</button>
+
+    <div class="login-footer">
+      <svg viewBox="0 0 24 24"><path d="M12 1C8.676 1 6 3.676 6 7v1H4v15h16V8h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v1H8V7c0-2.276 1.724-4 4-4zm0 9a2 2 0 110 4 2 2 0 010-4z"/></svg>
+      AES-256-GCM · Kyber-1024 · Zero-Knowledge
+    </div>
+
+    <div class="enc-badge" style="margin-top:20px">
+      <svg viewBox="0 0 24 24"><path d="M12 1C8.676 1 6 3.676 6 7v1H4v15h16V8h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v1H8V7c0-2.276 1.724-4 4-4zm0 9a2 2 0 110 4 2 2 0 010-4z"/></svg>
+      END-TO-END ENCRYPTED
+    </div>
+  </div>
+
+  <!-- ═══ CHAT LIST SCREEN ═══ -->
+  <div id="screen-chatlist" class="screen hidden">
+    <div class="safe-top"></div>
+    <div class="top-bar">
+      <h1>Chats</h1>
+      <button class="icon-btn" id="btn-add-contact" title="Add Contact">
+        <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      </button>
+      <button class="icon-btn" id="btn-settings" title="Settings">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      </button>
+    </div>
+    <div class="divider"></div>
+
+    <div id="chatlist-empty" class="empty-state">
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+      <p>No contacts yet.<br/>Tap + to add someone by email.</p>
+    </div>
+    <div id="chatlist-items" class="chat-list-scroll" style="display:none"></div>
+
+    <button class="fab" id="btn-fab">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+    </button>
+  </div>
+
+  <!-- ═══ CHAT SCREEN ═══ -->
+  <div id="screen-chat" class="screen hidden">
+    <div class="chat-top-bar">
+      <button class="icon-btn" id="btn-back">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </button>
+      <div id="chat-avatar" class="avatar small">??</div>
+      <div class="chat-contact-info">
+        <div id="chat-contact-name" class="chat-contact-name">Contact</div>
+        <div class="chat-contact-status">
+          <svg viewBox="0 0 24 24"><path d="M12 1C8.676 1 6 3.676 6 7v1H4v15h16V8h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v1H8V7c0-2.276 1.724-4 4-4zm0 9a2 2 0 110 4 2 2 0 010-4z"/></svg>
+          ENCRYPTED · ONLINE
+        </div>
+      </div>
+      <button class="icon-btn">
+        <svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+      </button>
+    </div>
+
+    <div id="sd-banner" class="sd-banner hidden">
+      <div class="sd-banner-left">
+        <svg viewBox="0 0 24 24"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+        Self-destruct: 10s after read
+      </div>
+      <button class="sd-cancel" id="btn-sd-cancel">CANCEL</button>
+    </div>
+
+    <div id="messages-area" class="messages-area"></div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-row">
+        <button class="icon-btn timer-btn" id="btn-timer" title="Self-destruct">
+          <svg viewBox="0 0 24 24"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+        </button>
+        <textarea id="chat-input" class="chat-input" placeholder="Encrypted message..." rows="1"></textarea>
+        <button id="btn-send" class="send-btn inactive">
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SETTINGS SCREEN ═══ -->
+  <div id="screen-settings" class="screen hidden">
+    <div class="safe-top"></div>
+    <div class="top-bar">
+      <button class="icon-btn" id="btn-settings-back">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </button>
+      <h1>Settings</h1>
+    </div>
+    <div class="divider"></div>
+
+    <div class="settings-scroll">
+      <!-- Profile Card -->
+      <div class="settings-profile-card">
+        <div class="avatar" id="settings-avatar">??</div>
+        <div>
+          <div style="font-size:17px;font-weight:700;color:var(--text-primary)" id="settings-username">Loading...</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:2px" id="settings-email">—</div>
+          <div style="margin-top:8px">
+            <span class="enc-badge">
+              <svg viewBox="0 0 24 24"><path d="M12 1C8.676 1 6 3.676 6 7v1H4v15h16V8h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v1H8V7c0-2.276 1.724-4 4-4zm0 9a2 2 0 110 4 2 2 0 010-4z"/></svg>
+              VERIFIED IDENTITY
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="settings-section">
+        <div class="settings-section-title">Security</div>
+        <div class="settings-row">
+          <div class="settings-row-icon" style="background:linear-gradient(135deg,#0EA5E9,#14B8A6)">
+            <svg viewBox="0 0 24 24"><path d="M12 1C8.676 1 6 3.676 6 7v1H4v15h16V8h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v1H8V7c0-2.276 1.724-4 4-4zm0 9a2 2 0 110 4 2 2 0 010-4z"/></svg>
+          </div>
+          <div class="settings-row-label">
+            <span>Encryption</span>
+            <span>AES-256-GCM · Kyber-1024</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-icon" style="background:linear-gradient(135deg,#8B5CF6,#0EA5E9)">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          </div>
+          <div class="settings-row-label">
+            <span>Zero-Knowledge Backend</span>
+            <span>Your keys never leave this device</span>
+          </div>
+        </div>
+        <div class="settings-row" id="row-server-config" style="cursor:pointer">
+          <div class="settings-row-icon" style="background:linear-gradient(135deg,#F59E0B,#EF4444)">
+            <svg viewBox="0 0 24 24"><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z"/></svg>
+          </div>
+          <div class="settings-row-label">
+            <span>Server Config</span>
+            <span id="settings-server-url-display">192.168.162.129:3001</span>
+          </div>
+          <svg class="chevron" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+        </div>
+      </div>
+
+      <!-- About -->
+      <div class="settings-section">
+        <div class="settings-section-title">About</div>
+        <div class="settings-row">
+          <div class="settings-row-icon" style="background:linear-gradient(135deg,#0EA5E9,#06B6D4)">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <div class="settings-row-label">
+            <span>Cyphra PWA</span>
+            <span>Version 1.0.0</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-danger" id="btn-logout">SIGN OUT</button>
+    </div>
+  </div>
+
+  <!-- ═══ ADD CONTACT DIALOG ═══ -->
+  <div class="overlay hidden" id="overlay-add-contact">
+    <div class="dialog">
+      <div class="dialog-handle"></div>
+      <div class="dialog-title">Add Contact</div>
+      <div class="dialog-subtitle">Enter the email address of a Cyphra user</div>
+
+      <div class="field-label" style="margin-bottom:6px">
+        <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:var(--accent)"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        Email Address
+      </div>
+      <input id="input-contact-email" class="text-input" type="email" placeholder="contact@email.com"
+             autocapitalize="none" autocorrect="off" />
+      <div id="dialog-error" class="dialog-error"></div>
+      <div id="dialog-success" class="dialog-success" style="display:none">
+        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+        <span id="dialog-success-text"></span>
+      </div>
+
+      <div class="dialog-actions">
+        <button class="btn-outline" id="btn-dialog-cancel">CANCEL</button>
+        <button class="btn-outlined-accent" id="btn-dialog-add">ADD</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SERVER CONFIG DIALOG ═══ -->
+  <div class="overlay hidden" id="overlay-server">
+    <div class="dialog">
+      <div class="dialog-handle"></div>
+      <div class="dialog-title">Server Config</div>
+      <div class="dialog-subtitle">Change backend address (e.g. when your IP changes)</div>
+      <div class="field-label" style="margin-bottom:6px">Server IP:Port</div>
+      <input id="input-server-url" class="text-input" type="text" placeholder="192.168.1.6:3001"
+             autocapitalize="none" autocorrect="off" spellcheck="false" />
+      <div class="dialog-actions" style="margin-top:16px">
+        <button class="btn-outline" id="btn-server-cancel">CANCEL</button>
+        <button class="btn-outlined-accent" id="btn-server-save">SAVE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ INSTALL BANNER ═══ -->
+  <div id="install-banner" class="hidden">
+    <svg style="width:36px;height:36px;flex-shrink:0" viewBox="0 0 24 24">
+      <defs><linearGradient id="ig" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#0EA5E9"/><stop offset="100%" stop-color="#14B8A6"/>
+      </linearGradient></defs>
+      <rect width="24" height="24" rx="6" fill="url(#ig)"/>
+      <path d="M12 3a9 9 0 100 18A9 9 0 0012 3zm-1 13v-2H7l5-5 5 5h-4v2h-2z" fill="white"/>
+    </svg>
+    <div id="install-banner-text">
+      <strong>Install Cyphra</strong>
+      Add to your home screen for the full app experience
+    </div>
+    <button class="btn-install" id="btn-install">Install</button>
+  </div>
+
+  <div id="toast"></div>
+</div>
+
+<script src="crypto.js"></script>
+<script src="api.js"></script>
+<script src="websocket.js"></script>
+<script src="app.js"></script>
+<script>
+  // Service Worker registration
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('[SW] Registered', reg.scope))
+        .catch(err => console.warn('[SW] Registration failed', err));
+    });
+  }
+</script>
+</body>
+</html>
