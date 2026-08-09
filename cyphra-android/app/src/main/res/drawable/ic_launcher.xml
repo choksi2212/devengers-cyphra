@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Deep navy background -->
+    <path
+        android:fillColor="#0A0F1A"
+        android:pathData="M0,0 L108,0 L108,108 L0,108 Z"/>
+
+    <!-- Shield outline (filled with semi-transparent accent) -->
+    <path
+        android:fillColor="#1A3A5C"
+        android:pathData="M54,20 L76,30 L76,54 C76,66 66,75 54,80 C42,75 32,66 32,54 L32,30 Z"/>
+
+    <!-- Shield accent border -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#0EA5E9"
+        android:strokeWidth="2"
+        android:pathData="M54,20 L76,30 L76,54 C76,66 66,75 54,80 C42,75 32,66 32,54 L32,30 Z"/>
+
+    <!-- Lock body (rectangle using pathData) -->
+    <path
+        android:fillColor="#0EA5E9"
+        android:pathData="M46,50 L62,50 L62,64 C62,65.1 61.1,66 60,66 L48,66 C46.9,66 46,65.1 46,64 Z"/>
+
+    <!-- Lock shackle (arc-like path) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#0EA5E9"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M48,50 L48,44 C48,40.7 51,38 54,38 C57,38 60,40.7 60,44 L60,50"/>
+
+    <!-- Keyhole circle -->
+    <path
+        android:fillColor="#0A0F1A"
+        android:pathData="M54,55 m-2.5,0 a2.5,2.5 0,1 0,5 0 a2.5,2.5 0,1 0,-5 0"/>
+
+    <!-- Keyhole slot -->
+    <path
+        android:fillColor="#0A0F1A"
+        android:pathData="M52.5,57.5 L52.5,62 L55.5,62 L55.5,57.5 Z"/>
+
+</vector>
