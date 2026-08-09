@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cash Flow Analysis — CYPHRA Business Plan</title>
+    <meta name="description" content="CYPHRA cash flow analysis: break-even at Month 28, bootstrap runway, funding scenarios, and sensitivity analysis.">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand"><i class="fas fa-shield-halved"></i><span>CYPHRA</span></div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="startup-costs-detailed.html">Startup</a></li>
+                <li><a href="revenue-detailed.html">Revenue</a></li>
+                <li><a href="expenses-detailed.html">Expenses</a></li>
+                <li><a href="cash-flow-detailed.html" class="active">Cash Flow</a></li>
+                <li><a href="risks.html">Risks</a></li>
+                <li><a href="metrics-detailed.html">Metrics</a></li>
+                <li><a href="competitive-detailed.html">Competition</a></li>
+                <li><a href="financials-detailed.html">Financials</a></li>
+                <li><a href="exit-strategy-detailed.html">Exit</a></li>
+            </ul>
+            <div class="hamburger"><span></span><span></span><span></span></div>
+        </div>
+    </nav>
+
+    <section class="page-header">
+        <div class="container">
+            <h1><i class="fas fa-water"></i> Cash Flow Analysis</h1>
+            <p>Bootstrap Runway, Break-Even & Funding Scenarios</p>
+        </div>
+    </section>
+
+    <!-- Summary -->
+    <section class="section">
+        <div class="container">
+            <div class="highlight-box">
+                <h2>Break-Even Point</h2>
+                <div class="big-number">Month 28</div>
+                <p style="color: var(--text-secondary);">Monthly recurring revenue exceeds monthly expenses — path to profitability</p>
+                <div class="metrics-grid" style="margin-top: 2rem;">
+                    <div class="metric-card">
+                        <div class="metric-label">Bootstrap Capital</div>
+                        <div class="metric-value">₹15 L</div>
+                        <div class="metric-sublabel">Founder investment</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Max Cash Burn</div>
+                        <div class="metric-value">₹17 L</div>
+                        <div class="metric-sublabel">Lowest point (Month 14)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Y5 Cash Position</div>
+                        <div class="metric-value">₹5.85 Cr</div>
+                        <div class="metric-sublabel">Cumulative surplus</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Y5 Free Cash Flow</div>
+                        <div class="metric-value">₹4.8 Cr</div>
+                        <div class="metric-sublabel">Annual FCF</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Annual Cash Flow Table -->
+    <section class="section bg-light">
+        <div class="container">
+            <h2 class="section-title">Annual Cash Flow Statement</h2>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Item</th><th>Year 0</th><th>Year 1</th><th>Year 2</th><th>Year 3</th><th>Year 4</th><th>Year 5</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-header"><td colspan="7">CASH INFLOWS</td></tr>
+                        <tr><td>Startup Capital</td><td>₹15 L</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td>Revenue</td><td>—</td><td>₹18 L</td><td>₹1.2 Cr</td><td>₹4.5 Cr</td><td>₹8 Cr</td><td>₹12 Cr</td></tr>
+                        <tr><td>Grants (iDEX/MeitY)</td><td>—</td><td>—</td><td>₹50 L</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr class="highlight-row"><td><strong>Total Inflows</strong></td><td><strong>₹15 L</strong></td><td><strong>₹18 L</strong></td><td><strong>₹1.7 Cr</strong></td><td><strong>₹4.5 Cr</strong></td><td><strong>₹8 Cr</strong></td><td><strong>₹12 Cr</strong></td></tr>
+
+                        <tr class="section-header"><td colspan="7">CASH OUTFLOWS</td></tr>
+                        <tr><td>Startup Costs</td><td>₹15 L</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+                        <tr><td>Operating Expenses</td><td>—</td><td>₹19 L</td><td>₹56 L</td><td>₹1.22 Cr</td><td>₹1.95 Cr</td><td>₹2.67 Cr</td></tr>
+                        <tr><td>COGS (Hosting + Support)</td><td>—</td><td>₹4 L</td><td>₹18 L</td><td>₹50 L</td><td>₹72 L</td><td>₹96 L</td></tr>
+                        <tr><td>Taxes (25.17%)</td><td>—</td><td>₹0</td><td>₹0</td><td>₹20 L</td><td>₹52 L</td><td>₹95 L</td></tr>
+                        <tr class="highlight-row"><td><strong>Total Outflows</strong></td><td><strong>₹15 L</strong></td><td><strong>₹23 L</strong></td><td><strong>₹74 L</strong></td><td><strong>₹1.92 Cr</strong></td><td><strong>₹3.19 Cr</strong></td><td><strong>₹4.58 Cr</strong></td></tr>
+
+                        <tr class="total-row"><td><strong>Net Cash Flow</strong></td><td><strong>₹0</strong></td><td><strong>-₹5 L</strong></td><td><strong>₹96 L</strong></td><td><strong>₹2.58 Cr</strong></td><td><strong>₹4.81 Cr</strong></td><td><strong>₹7.42 Cr</strong></td></tr>
+                        <tr><td><strong>Cumulative Cash</strong></td><td>₹0</td><td>-₹5 L</td><td>₹91 L</td><td>₹3.49 Cr</td><td>₹8.3 Cr</td><td>₹15.72 Cr</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="cashFlowChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cumulative Cash Flow -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Cumulative Cash Flow</h2>
+            <div class="chart-container">
+                <canvas id="cumulativeCashChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Monthly Year 1 -->
+    <section class="section bg-light">
+        <div class="container">
+            <h2 class="section-title">Monthly Cash Flow — Year 1</h2>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Month</th><th>Revenue</th><th>Expenses</th><th>Net CF</th><th>Cumulative</th><th>Runway</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Month 1</td><td>₹0</td><td>₹2.5 L</td><td>-₹2.5 L</td><td>-₹2.5 L</td><td>5 months</td></tr>
+                        <tr><td>Month 2</td><td>₹0</td><td>₹1.8 L</td><td>-₹1.8 L</td><td>-₹4.3 L</td><td>6 months</td></tr>
+                        <tr><td>Month 3</td><td>₹0</td><td>₹1.5 L</td><td>-₹1.5 L</td><td>-₹5.8 L</td><td>6 months</td></tr>
+                        <tr><td>Month 4</td><td>₹0</td><td>₹1.5 L</td><td>-₹1.5 L</td><td>-₹7.3 L</td><td>5 months</td></tr>
+                        <tr><td>Month 5</td><td>₹0</td><td>₹1.2 L</td><td>-₹1.2 L</td><td>-₹8.5 L</td><td>5 months</td></tr>
+                        <tr><td>Month 6</td><td>₹0.5 L</td><td>₹1.2 L</td><td>-₹0.7 L</td><td>-₹9.2 L</td><td>7 months</td></tr>
+                        <tr><td>Month 7</td><td>₹0.8 L</td><td>₹1.0 L</td><td>-₹0.2 L</td><td>-₹9.4 L</td><td>28 months</td></tr>
+                        <tr><td>Month 8</td><td>₹1.0 L</td><td>₹1.0 L</td><td>₹0</td><td>-₹9.4 L</td><td>∞</td></tr>
+                        <tr><td>Month 9</td><td>₹1.2 L</td><td>₹1.0 L</td><td>+₹0.2 L</td><td>-₹9.2 L</td><td>∞</td></tr>
+                        <tr><td>Month 10</td><td>₹1.5 L</td><td>₹0.8 L</td><td>+₹0.7 L</td><td>-₹8.5 L</td><td>∞</td></tr>
+                        <tr><td>Month 11</td><td>₹1.5 L</td><td>₹0.8 L</td><td>+₹0.7 L</td><td>-₹7.8 L</td><td>∞</td></tr>
+                        <tr><td>Month 12</td><td>₹1.5 L</td><td>₹0.7 L</td><td>+₹0.8 L</td><td>-₹7 L</td><td>∞</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Milestones -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Cash Flow Milestones</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker">M1</div>
+                    <div class="timeline-content">
+                        <h3>Foundation & Setup</h3>
+                        <div class="timeline-date">Month 0–3 | Cash: -₹5.8L</div>
+                        <ul>
+                            <li>Heavy upfront spending: Company registration, servers, certifications</li>
+                            <li>Zero revenue — pure investment phase</li>
+                            <li>Burn rate: ₹1.5-2.5L/month</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">M2</div>
+                    <div class="timeline-content">
+                        <h3>First Revenue & POC</h3>
+                        <div class="timeline-date">Month 4–8 | Cash: -₹9.4L (trough)</div>
+                        <ul>
+                            <li>First POC deployed (Month 5), first paid contract (Month 6)</li>
+                            <li>Revenue starts: ₹0.5L → ₹1L/month</li>
+                            <li>Cash burn slows dramatically — monthly break-even by Month 8</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">M3</div>
+                    <div class="timeline-content">
+                        <h3>Revenue Growth</h3>
+                        <div class="timeline-date">Month 9–18 | Cash recovering</div>
+                        <ul>
+                            <li>3 SOC customers generating ₹1.5L/month</li>
+                            <li>Positive monthly cash flow from Month 9 onwards</li>
+                            <li>iDEX grant application (potential ₹50L boost)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">M4</div>
+                    <div class="timeline-content">
+                        <h3>Break-Even Point</h3>
+                        <div class="timeline-date">Month 28 | Cumulative cash turns positive</div>
+                        <ul>
+                            <li>Cumulative cash flow crosses ₹0 — all initial investment recovered</li>
+                            <li>MRR exceeds ₹10L/month</li>
+                            <li>13+ paying customers across tiers</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">M5</div>
+                    <div class="timeline-content">
+                        <h3>Profitable Scale</h3>
+                        <div class="timeline-date">Month 29–60 | Cash surplus growing</div>
+                        <ul>
+                            <li>Net profit margin: 29-34%</li>
+                            <li>Free cash flow: ₹2.8-4.8 Cr annually</li>
+                            <li>Self-funded growth — no external capital needed</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Funding Scenarios -->
+    <section class="section bg-light">
+        <div class="container">
+            <h2 class="section-title">Funding Scenarios</h2>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="card-icon"><i class="fas fa-vault"></i></div>
+                    <h3>Scenario 1: Bootstrap Only</h3>
+                    <p><strong>Capital:</strong> ₹15 Lakhs (founder savings)</p>
+                    <p><strong>Runway:</strong> 14 months at worst</p>
+                    <p><strong>Break-Even:</strong> Month 28</p>
+                    <p><strong>Risk:</strong> Tight — any delays in first customer push break-even back</p>
+                    <p><strong>Equity Dilution:</strong> 0%</p>
+                    <p><strong>Best For:</strong> If first 3 customers land within 6 months</p>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon"><i class="fas fa-bullseye"></i></div>
+                    <h3>Scenario 2: Bootstrap + iDEX Grant</h3>
+                    <p><strong>Capital:</strong> ₹15L + ₹50L grant = ₹65L</p>
+                    <p><strong>Runway:</strong> 30+ months (comfortable)</p>
+                    <p><strong>Break-Even:</strong> Month 22 (faster hiring)</p>
+                    <p><strong>Risk:</strong> Low — large buffer for govt sales cycle delays</p>
+                    <p><strong>Equity Dilution:</strong> 0% (grant, not equity)</p>
+                    <p><strong>Best For:</strong> DOC module targeting defence customers</p>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon"><i class="fas fa-sack-dollar"></i></div>
+                    <h3>Scenario 3: Bootstrap + Seed Round</h3>
+                    <p><strong>Capital:</strong> ₹15L + ₹1Cr seed = ₹1.15 Cr</p>
+                    <p><strong>Runway:</strong> 36+ months</p>
+                    <p><strong>Break-Even:</strong> Month 18 (aggressive hiring + sales)</p>
+                    <p><strong>Risk:</strong> Very low — but 10% equity dilution</p>
+                    <p><strong>Equity Dilution:</strong> 8-12%</p>
+                    <p><strong>Best For:</strong> Rapid enterprise market capture</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sensitivity Analysis -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Sensitivity Analysis</h2>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Scenario</th><th>Y3 Revenue</th><th>Y5 Revenue</th><th>Break-Even</th><th>Y5 Cash</th><th>Probability</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Optimistic (+40%)</strong></td><td>₹6.3 Cr</td><td>₹16.8 Cr</td><td>Month 20</td><td>₹9 Cr</td><td>20%</td></tr>
+                        <tr class="highlight-row"><td><strong>Base Case</strong></td><td>₹4.5 Cr</td><td>₹12 Cr</td><td>Month 28</td><td>₹5.85 Cr</td><td>50%</td></tr>
+                        <tr><td><strong>Pessimistic (-30%)</strong></td><td>₹3.15 Cr</td><td>₹8.4 Cr</td><td>Month 36</td><td>₹3 Cr</td><td>20%</td></tr>
+                        <tr><td><strong>Worst Case (-50%)</strong></td><td>₹2.25 Cr</td><td>₹6 Cr</td><td>Month 42</td><td>₹1.2 Cr</td><td>10%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section"><h4>CYPHRA Technologies</h4><p>Real-Time Cybersecurity & Defence Platform</p><p>Bangalore, Karnataka, India</p></div>
+                <div class="footer-section"><h4>Contact</h4><p></p><p></p></div>
+                <div class="footer-section"><h4>Contact</h4><p>security@cyphra.io</p></div>
+            </div>
+            <div class="footer-bottom"><p>&copy; 2026 CYPHRA Technologies Pvt. Ltd. All rights reserved.</p></div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/charts.js"></script>
+</body>
+</html>

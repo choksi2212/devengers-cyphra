@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Analysis — CYPHRA Business Plan</title>
+    <meta name="description" content="CYPHRA honest risk assessment: government sales cycle, compliance barriers, competition, and worst-case scenarios for Indian cybersecurity market.">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand"><i class="fas fa-shield-halved"></i><span>CYPHRA</span></div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="startup-costs-detailed.html">Startup</a></li>
+                <li><a href="revenue-detailed.html">Revenue</a></li>
+                <li><a href="expenses-detailed.html">Expenses</a></li>
+                <li><a href="cash-flow-detailed.html">Cash Flow</a></li>
+                <li><a href="risks.html" class="active">Risks</a></li>
+                <li><a href="metrics-detailed.html">Metrics</a></li>
+                <li><a href="competitive-detailed.html">Competition</a></li>
+                <li><a href="financials-detailed.html">Financials</a></li>
+                <li><a href="exit-strategy-detailed.html">Exit</a></li>
+            </ul>
+            <div class="hamburger"><span></span><span></span><span></span></div>
+        </div>
+    </nav>
+
+    <section class="page-header">
+        <div class="container">
+            <h1><i class="fas fa-triangle-exclamation"></i> Risk Analysis & Mitigation</h1>
+            <p>Honest Assessment of Challenges — Indian Defence & Cybersecurity Market</p>
+        </div>
+    </section>
+
+    <!-- Risk Cards -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Major Risk Categories</h2>
+            <div class="summary-grid">
+                <div class="summary-card" style="border-left: 3px solid var(--accent-red);">
+                    <div class="card-icon" style="color: var(--accent-red);"><i class="fas fa-hourglass-half"></i></div>
+                    <h3>🔴 Government Sales Cycle — HIGH</h3>
+                    <p><strong>Risk:</strong> Defence procurement takes 12-18 months. Bureaucratic approvals, tender processes, and budget cycles cause severe delays.</p>
+                    <p><strong>Impact:</strong> Revenue targets for DOC and Full Platform tiers may slip by 6-12 months.</p>
+                    <p><strong>Mitigation:</strong></p>
+                    <ul>
+                        <li>Start with private sector SOC sales (3-6 month cycle)</li>
+                        <li>Use private sector revenue as bridge while defence deals close</li>
+                        <li>Engage with iDEX which has faster procurement processes</li>
+                        <li>Build relationships early — attend defence expos from Month 1</li>
+                        <li>Target DPSUs (BEL, HAL) which have faster procurement than military</li>
+                    </ul>
+                </div>
+                <div class="summary-card" style="border-left: 3px solid var(--accent-red);">
+                    <div class="card-icon" style="color: var(--accent-red);"><i class="fas fa-stamp"></i></div>
+                    <h3>🔴 Compliance & Certification Barriers — HIGH</h3>
+                    <p><strong>Risk:</strong> Need ISO 27001, CERT-In empanelment, and potentially CCS/ICES clearance for defence deployments. Each takes 6-12 months.</p>
+                    <p><strong>Impact:</strong> Cannot bid on government tenders without certifications. Delays entire defence revenue stream.</p>
+                    <p><strong>Mitigation:</strong></p>
+                    <ul>
+                        <li>Start ISO 27001 process in Month 1 (budget allocated)</li>
+                        <li>Hire specialized compliance consultant</li>
+                        <li>Apply for CERT-In empanelment in Month 3</li>
+                        <li>Build compliance into product from day one (audit logs, RBAC already built)</li>
+                        <li>SOC 2 Type I as stepping stone for enterprise credibility</li>
+                    </ul>
+                </div>
+                <div class="summary-card" style="border-left: 3px solid var(--accent-orange);">
+                    <div class="card-icon" style="color: var(--accent-orange);"><i class="fas fa-earth-americas"></i></div>
+                    <h3>🟡 Global Competitor Entry — MEDIUM</h3>
+                    <p><strong>Risk:</strong> CrowdStrike, Palo Alto, Splunk have massive R&D budgets and are expanding India operations. They could undercut pricing.</p>
+                    <p><strong>Impact:</strong> Enterprise customers may prefer established global brands over an Indian startup.</p>
+                    <p><strong>Mitigation:</strong></p>
+                    <ul>
+                        <li>"Make in India" advantage — govt mandates for Indian-made products</li>
+                        <li>On-premise deployment (global players are cloud-only)</li>
+                        <li>Post-quantum crypto — no global competitor has this</li>
+                        <li>3-5x cheaper than global alternatives</li>
+                        <li>Defence DOC module — no competitor offers signal + EW monitoring</li>
+                    </ul>
+                </div>
+                <div class="summary-card" style="border-left: 3px solid var(--accent-orange);">
+                    <div class="card-icon" style="color: var(--accent-orange);"><i class="fas fa-person-circle-question"></i></div>
+                    <h3>🟡 Team Scaling — MEDIUM</h3>
+                    <p><strong>Risk:</strong> Finding Rust + ML + security talent in India is extremely hard. Senior cybersecurity engineers command ₹20-40L packages.</p>
+                    <p><strong>Impact:</strong> Slower product development and customer support if hiring fails.</p>
+                    <p><strong>Mitigation:</strong></p>
+                    <ul>
+                        <li>Hire from IIT/NIT campus (train fresh graduates in Rust)</li>
+                        <li>Offer meaningful equity (0.5-2% for early engineers)</li>
+                        <li>Remote-first culture expands talent pool beyond Bangalore</li>
+                        <li>Strong technical brand through conference talks & publications</li>
+                        <li>Keep team lean — founders handle core dev until Year 2</li>
+                    </ul>
+                </div>
+                <div class="summary-card" style="border-left: 3px solid var(--accent-green);">
+                    <div class="card-icon" style="color: var(--accent-green);"><i class="fas fa-microscope"></i></div>
+                    <h3>🟢 Technical Risk — LOW</h3>
+                    <p><strong>Risk:</strong> Core technology may have undiscovered vulnerabilities or performance issues at scale.</p>
+                    <p><strong>Impact:</strong> Minimal — product is already built with 25,000+ lines of code and tested.</p>
+                    <p><strong>Mitigation:</strong></p>
+                    <ul>
+                        <li>Product already built and functioning (working demos available)</li>
+                        <li>ML models trained on 19.5M real network flows (not synthetic data)</li>
+                        <li>98.834% accuracy verified on held-out test set</li>
+                        <li>Rust provides memory safety guarantees</li>
+                        <li>3rd party security audit planned in Phase 1</li>
+                    </ul>
+                </div>
+                <div class="summary-card" style="border-left: 3px solid var(--accent-green);">
+                    <div class="card-icon" style="color: var(--accent-green);"><i class="fas fa-sack-dollar"></i></div>
+                    <h3>🟢 Funding Risk — LOW</h3>
+                    <p><strong>Risk:</strong> Unable to secure additional funding (iDEX grant or seed round).</p>
+                    <p><strong>Impact:</strong> Minimal — bootstrap of ₹15L is sufficient for base case.</p>
+                    <p><strong>Mitigation:</strong></p>
+                    <ul>
+                        <li>Only ₹15L needed (extremely low for cybersecurity startup)</li>
+                        <li>Product already built — no R&D capital needed</li>
+                        <li>Revenue from Month 6 reduces dependency on funding</li>
+                        <li>Multiple grant options (iDEX, MeitY, Startup India)</li>
+                        <li>Can operate profitably on bootstrap alone</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Risk Matrix -->
+    <section class="section bg-light">
+        <div class="container">
+            <h2 class="section-title">Risk Impact vs Probability Matrix</h2>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Risk</th><th>Probability</th><th>Impact</th><th>Severity</th><th>Mitigation Cost</th><th>Residual Risk</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Govt Sales Delay</strong></td><td>70%</td><td>High</td><td class="badge-critical"><strong>HIGH</strong></td><td>₹0 (strategy change)</td><td>Medium</td></tr>
+                        <tr><td><strong>Certification Delay</strong></td><td>50%</td><td>High</td><td class="badge-critical"><strong>HIGH</strong></td><td>₹3L (fast-track)</td><td>Low</td></tr>
+                        <tr><td><strong>Global Competition</strong></td><td>60%</td><td>Medium</td><td class="badge-high"><strong>MEDIUM</strong></td><td>₹0 (inherent advantage)</td><td>Low</td></tr>
+                        <tr><td><strong>Hiring Difficulty</strong></td><td>40%</td><td>Medium</td><td class="badge-high"><strong>MEDIUM</strong></td><td>₹2L (recruiting)</td><td>Low</td></tr>
+                        <tr><td><strong>Technical Issues</strong></td><td>10%</td><td>Low</td><td class="badge-low"><strong>LOW</strong></td><td>₹75K (audit)</td><td>Very Low</td></tr>
+                        <tr><td><strong>Funding Gap</strong></td><td>15%</td><td>Low</td><td class="badge-low"><strong>LOW</strong></td><td>₹0 (bootstrap sufficient)</td><td>Very Low</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Worst Case Scenarios -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Worst Case Scenarios — Honest Assessment</h2>
+            <div class="summary-grid">
+                <div class="summary-card" style="border-left: 3px solid var(--accent-red);">
+                    <div class="card-icon" style="color: var(--accent-red);"><i class="fas fa-road-barrier"></i></div>
+                    <h3>Scenario 1: No Defence Contracts</h3>
+                    <p><strong>Probability:</strong> 30%</p>
+                    <p><strong>What Happens:</strong> Government procurement is too slow. No DOC or Full Platform customers in Year 1-2.</p>
+                    <p><strong>Financial Impact:</strong> Revenue limited to SOC Standard tier: ₹18L (Y1) → ₹60L (Y2). Still viable but slower growth.</p>
+                    <p><strong>Pivot Strategy:</strong> Focus entirely on private sector — fintech, banking, telecom SOC market. CYPHRA's SOC alone is competitive against Splunk/Quick Heal.</p>
+                    <p><strong>Maximum Loss:</strong> ₹15L bootstrap (recoverable from SOC revenue by Year 3)</p>
+                </div>
+                <div class="summary-card" style="border-left: 3px solid var(--accent-orange);">
+                    <div class="card-icon" style="color: var(--accent-orange);"><i class="fas fa-snail"></i></div>
+                    <h3>Scenario 2: Slow Growth</h3>
+                    <p><strong>Probability:</strong> 40%</p>
+                    <p><strong>What Happens:</strong> Revenue grows at 50% of base case. Sales cycle longer than expected. Only 1-2 customers Year 1.</p>
+                    <p><strong>Financial Impact:</strong> Year 3 revenue: ₹2.25 Cr (vs ₹4.5 Cr base). Break-even pushed to Month 36-42.</p>
+                    <p><strong>Pivot Strategy:</strong> Cut expenses aggressively, focus on 2-3 reference customers, seek iDEX grant as bridge funding.</p>
+                    <p><strong>Maximum Loss:</strong> ₹20-25L (bootstrap + early operating losses)</p>
+                </div>
+                <div class="summary-card" style="border-left: 3px solid var(--accent-green);">
+                    <div class="card-icon" style="color: var(--accent-green);"><i class="fas fa-ranking-star"></i></div>
+                    <h3>Scenario 3: Base Case Success</h3>
+                    <p><strong>Probability:</strong> 30%</p>
+                    <p><strong>What Happens:</strong> Hit or exceed projections. Defence contracts land Year 2. Enterprise market adopts SOC.</p>
+                    <p><strong>Financial Impact:</strong> ₹12 Cr Year 5 revenue, ₹4.8 Cr profit, ₹60 Cr valuation.</p>
+                    <p><strong>Key Driver:</strong> Strong live demo capabilities + Make in India advantage + post-quantum differentiation.</p>
+                    <p><strong>Upside:</strong> Could exceed ₹15 Cr revenue if PQC becomes mandated</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Risk Mitigants -->
+    <section class="section bg-light">
+        <div class="container">
+            <h2 class="section-title">Why the Risk is Manageable</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-terminal"></i></div>
+                    <h3>Product Already Built</h3>
+                    <p>Unlike most startups, CYPHRA's product is already functional with 25,000+ lines of code. The risk is market adoption, not technology development.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-piggy-bank"></i></div>
+                    <h3>Low Capital Requirement</h3>
+                    <p>₹15L is extremely low for a cybersecurity startup. Even in worst case, founders lose limited capital. No VC pressure, no burn rate anxiety.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-signs-post"></i></div>
+                    <h3>Multiple Revenue Paths</h3>
+                    <p>SOC works for private sector even if defence fails. Each tier is independently viable. Not dependent on a single market segment.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-wind"></i></div>
+                    <h3>Make in India Tailwind</h3>
+                    <p>Government of India is actively mandating Indian cybersecurity products. Regulatory wind is at CYPHRA's back, not against it.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section"><h4>CYPHRA Technologies</h4><p>Real-Time Cybersecurity & Defence Platform</p><p>Bangalore, Karnataka, India</p></div>
+                <div class="footer-section"><h4>Contact</h4><p></p><p></p></div>
+                <div class="footer-section"><h4>Contact</h4><p>security@cyphra.io</p></div>
+            </div>
+            <div class="footer-bottom"><p>&copy; 2026 CYPHRA Technologies Pvt. Ltd. All rights reserved.</p></div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
