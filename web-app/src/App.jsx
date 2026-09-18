@@ -15,6 +15,20 @@ const MessengerPage = lazy(() => import('./pages/MessengerPage'))
 const SecurityDashboard = lazy(() => import('./pages/SecurityDashboard'))
 const DefenseOpsPage = lazy(() => import('./pages/DefenseOpsPage'))
 
+const SocOverviewPage    = lazy(() => import('./pages/SocOverviewPage'))
+const SocReadinessPage   = lazy(() => import('./pages/SocReadinessPage'))
+const SocMetricsPage     = lazy(() => import('./pages/SocMetricsPage'))
+const SocCasesPage       = lazy(() => import('./pages/SocCasesPage'))
+const SocCrisesPage      = lazy(() => import('./pages/SocCrisesPage'))
+const SocCoveragePage    = lazy(() => import('./pages/SocCoveragePage'))
+const SocHuntsPage       = lazy(() => import('./pages/SocHuntsPage'))
+const SocIntelPage       = lazy(() => import('./pages/SocIntelPage'))
+const SocRegressionPage  = lazy(() => import('./pages/SocRegressionPage'))
+const TriagePage         = lazy(() => import('./pages/TriagePage'))
+const ResponsePage       = lazy(() => import('./pages/ResponsePage'))
+const CompliancePage     = lazy(() => import('./pages/CompliancePage'))
+const AuditPage          = lazy(() => import('./pages/AuditPage'))
+
 function LoadingFallback() {
   return (
     <div className="h-screen flex items-center justify-center bg-cyphra-bg">
@@ -77,6 +91,47 @@ function App() {
           } />
           <Route path="/defense" element={
             <ProtectedRoute><DefenseOpsPage /></ProtectedRoute>
+          } />
+
+          {/* SOC operator dashboard */}
+          <Route path="/soc" element={
+            <ProtectedRoute><SocOverviewPage /></ProtectedRoute>
+          } />
+          <Route path="/soc/readiness" element={
+            <ProtectedRoute><SocReadinessPage /></ProtectedRoute>
+          } />
+          <Route path="/soc/metrics" element={
+            <ProtectedRoute><SocMetricsPage /></ProtectedRoute>
+          } />
+          <Route path="/soc/cases" element={
+            <ProtectedRoute><SocCasesPage /></ProtectedRoute>
+          } />
+          <Route path="/soc/crises" element={
+            <ProtectedRoute><SocCrisesPage /></ProtectedRoute>
+          } />
+          <Route path="/soc/coverage" element={
+            <ProtectedRoute><SocCoveragePage /></ProtectedRoute>
+          } />
+          <Route path="/soc/hunts" element={
+            <ProtectedRoute><SocHuntsPage /></ProtectedRoute>
+          } />
+          <Route path="/soc/intel" element={
+            <ProtectedRoute><SocIntelPage /></ProtectedRoute>
+          } />
+          <Route path="/soc/regression" element={
+            <ProtectedRoute><SocRegressionPage /></ProtectedRoute>
+          } />
+          <Route path="/soc/triage" element={
+            <ProtectedRoute><TriagePage /></ProtectedRoute>
+          } />
+          <Route path="/soc/response" element={
+            <ProtectedRoute><ResponsePage /></ProtectedRoute>
+          } />
+          <Route path="/soc/compliance" element={
+            <ProtectedRoute><CompliancePage /></ProtectedRoute>
+          } />
+          <Route path="/soc/audit" element={
+            <ProtectedRoute><AuditPage /></ProtectedRoute>
           } />
 
           <Route path="*" element={<Navigate to="/" />} />

@@ -1,12 +1,23 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { LayoutDashboard, MessageSquare, ShieldAlert, Settings, LogOut, Radio } from 'lucide-react'
+import { LayoutDashboard, MessageSquare, ShieldAlert, Settings, LogOut, Radio, Activity } from 'lucide-react'
 import useStore from '../store/useStore'
 
-const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/messenger', label: 'Messenger', icon: MessageSquare },
-  { path: '/security',  label: 'Security',  icon: ShieldAlert },
-  { path: '/defense',   label: 'Defence',   icon: Radio },
+const navGroups = [
+  {
+    key: 'messenger',
+    items: [
+      { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/messenger', label: 'Messenger', icon: MessageSquare },
+      { path: '/security',  label: 'Security',  icon: ShieldAlert },
+      { path: '/defense',   label: 'Defence',   icon: Radio },
+    ],
+  },
+  {
+    key: 'soc',
+    items: [
+      { path: '/soc', label: 'SOC', icon: Activity },
+    ],
+  },
 ]
 
 export default function Layout({ children }) {
@@ -31,29 +42,37 @@ export default function Layout({ children }) {
           <img src="/cyphra-logo.png" alt="CYPHRA" className="h-20 object-contain" />
         </button>
 
-        {/* Nav Items */}
-        <nav className="flex-1 flex flex-col items-center gap-2 w-full px-2">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path
-            const Icon = item.icon
-            return (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className={`relative w-full flex flex-col items-center justify-center gap-1 py-2.5 rounded transition-colors duration-150 ${isActive
-                  ? 'bg-cyphra-accent/10 text-cyphra-accent'
-                  : 'text-cyphra-text-muted hover:text-cyphra-text-secondary hover:bg-cyphra-bg'
-                  }`}
-                title={item.label}
-              >
-                <Icon className="w-[18px] h-[18px]" strokeWidth={1.5} />
-                <span className="text-[9px] font-medium leading-none">{item.label}</span>
-                {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-cyphra-accent rounded-r" />
-                )}
-              </button>
-            )
-          })}
+        {/* Nav Items, grouped with a divider between messenger + SOC */}
+        <nav className="flex-1 flex flex-col items-center gap-2 w-full px-2 overflow-y-auto">
+          {navGroups.map((group, gIdx) => (
+            <div key={group.key} className="w-full flex flex-col items-center gap-2">
+              {gIdx > 0 && (
+                <div className="w-8 h-px bg-cyphra-border my-1" aria-hidden="true" />
+              )}
+              {group.items.map((item) => {
+                const isActive = location.pathname === item.path ||
+                  (item.path === '/soc' && location.pathname.startsWith('/soc'))
+                const Icon = item.icon
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => navigate(item.path)}
+                    className={`relative w-full flex flex-col items-center justify-center gap-1 py-2.5 rounded transition-colors duration-150 ${isActive
+                      ? 'bg-cyphra-accent/10 text-cyphra-accent'
+                      : 'text-cyphra-text-muted hover:text-cyphra-text-secondary hover:bg-cyphra-bg'
+                      }`}
+                    title={item.label}
+                  >
+                    <Icon className="w-[18px] h-[18px]" strokeWidth={1.5} />
+                    <span className="text-[9px] font-medium leading-none">{item.label}</span>
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-cyphra-accent rounded-r" />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Bottom Actions */}
