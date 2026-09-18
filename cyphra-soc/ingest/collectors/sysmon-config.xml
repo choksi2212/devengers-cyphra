@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  CYPHRA-SOC Sysmon configuration — a working default, not a starting sketch.
+
+  Install (elevated):  sysmon64.exe -accepteula -i sysmon-config.xml
+  Update in place:     sysmon64.exe -c sysmon-config.xml
+  Show what is live:   sysmon64.exe -c
+
+  schemaversion 4.90 needs Sysmon 15.0 or newer. On an older binary the install
+  fails with "schemaversion not supported" rather than silently degrading — if that
+  happens, either update Sysmon (the link in SYSMON_SETUP always serves current) or
+  drop this to 4.82 and delete the FileExecutableDetected group, which is the only
+  thing here that 4.82 lacks.
+
+  ── The rule this file is written to ──────────────────────────────────────────
+
+  An exclusion is only safe if an attacker cannot satisfy its match condition. That
+  single test decides every filter below:
+
+    * Excluding by *full path* under C:\Windows\System32 is safe — writing there
+      already requires the privilege the exclusion would have been used to obtain.
+    * Excluding by *filename* is not. `Image condition="image"` matches on the leaf
+      name, and renaming a binary costs an attacker nothing.
+    * Excluding by *domain suffix* is safe for suffixes the attacker cannot
+      register (microsoft.com, windowsupdate.com) and unsafe for anything with a
+      customer-controlled subdomain (blob.core.windows.net, s3.amazonaws.com,
+      *.workers.dev), which is exactly where modern C2 lives.
+
+  So process creation (event 1) excludes nothing at all. It is the single
+  highest-value event Sysmon produces — the named log source for 264 of the 697
+  ATT&CK techniques that carry detection guidance — and every published exclusion
+  for it filters on a path or a command line, both of which the adversary chooses.
+  The volume is affordable; a blind spot is not.
+
+  Where volume genuinely is unaffordable — image loads, registry writes, file
+  creation — the filters are *include* lists rather than excludes. An include list
+  that misses something produces a gap that `detect/coverage.py` can see and
+  report. An exclude list that is too broad produces a gap that looks like a quiet
+  host. Between two kinds of incompleteness, choose the visible one.
+
+  ── Deliberately not enabled ──────────────────────────────────────────────────
+
+  * **ClipboardChange (24)** writes the clipboard's *contents* to the archive
+    directory. On a host that develops an encrypted messenger that means every
+    copied passphrase, recovery code and private key lands in a world-readable
+    file. The detection value does not come close.
+  * **FileBlockExecutable (27) / FileBlockShredding (28)** do not log — they
+    *block*, in the kernel, on a path match. That is a response action, and
+    response actions in CYPHRA go through `respond/safety.py` where the blast
+    radius is computed and a kill switch exists. Turning one on from a telemetry
+    config would put an unbounded, unreviewable prevention rule on the host behind
+    the operator's back. The collector maps both events if some other config emits
+    them; this one will not be why.
+  * **FileDelete (23)** archives every deleted file it matches, which fills the
+    disk on a build host in hours. FileDeleteDetected (26) carries the same
+    telemetry without the copy and is enabled instead. Event 23 is worth turning on
+    scoped to a crown-jewel directory once `enrich/asset.py` knows which
+    directories those are.
+-->
+<Sysmon schemaversion="4.90">
+
+  <!--
+    IMPHASH is here for a specific reason: it hashes the import table, not the
+    file, so it is stable across recompilation and repacking. It is what clusters
+    four droppers into one malware family when all four SHA-256s are unique.
+    `parse_hashes` in sysmon.py keeps it in `unmapped` because OCSF has no field
+    for it, lower-cased so a hunt joining it against an intel feed matches.
+  -->
+  <HashAlgorithms>SHA256,SHA1,MD5,IMPHASH</HashAlgorithms>
+
+  <!--
+    Certificate revocation checking makes an outbound OCSP/CRL request per newly
+    seen signed binary, from the sensor, synchronously. It slows process creation,
+    and it tells anyone watching egress the moment a new binary appears. Signature
+    *status* is still recorded from the local chain; only the network check is off.
+  -->
+  <CheckRevocation>False</CheckRevocation>
+
+  <!--
+    The one setting here that would corrupt CYPHRA's own telemetry if left at its
+    default. Sysmon does a reverse lookup on every network event to fill
+    DestinationHostname. Those lookups are real DNS traffic from the sensor, so
+    `network_flow` records them as flows and the DNS collector records them as
+    queries — the observer's own footprint arriving as observations. Worse, on an
+    attacker-controlled nameserver each one confirms that the connection was
+    noticed. Resolution belongs in `enrich/`, after the fact, from the lake.
+  -->
+  <DnsLookup>False</DnsLookup>
+
+  <!--
+    Where FileDeleteDetected and ProcessTampering put preserved artifacts. Nothing
+    enabled below actually archives file *contents* (see the note on event 23), so
+    this stays small; it exists so Sysmon has a valid destination rather than
+    falling back to a default the operator did not choose. Lock it down after
+    install: icacls C:\Sysmon /inheritance:r /grant:r "SYSTEM:(OI)(CI)F" "Administrators:(OI)(CI)F"
+  -->
+  <ArchiveDirectory>C:\Sysmon</ArchiveDirectory>
+
+  <EventFiltering>
+
+    <!-- ══ 1 — Process creation ═══════════════════════════════════════════════
+         No filter, by the rule at the top of this file. An empty exclude group is
+         the explicit way to say "log all of it" and survives a later `-c` merge;
+         deleting the group entirely would leave the same behaviour with no record
+         of the decision. -->
+    <RuleGroup name="process creation — unfiltered on purpose" groupRelation="or">
+      <ProcessCreate onmatch="exclude" />
+    </RuleGroup>
+
+    <!-- ══ 5 — Process termination ════════════════════════════════════════════
+         Cheap, and it is what closes a process's lifetime. Without it every
+         timeline `correlate/` builds has open-ended intervals, and "the process
+         was still running when the beacon called out" becomes unanswerable. -->
+    <RuleGroup name="process termination" groupRelation="or">
+      <ProcessTerminate onmatch="exclude" />
+    </RuleGroup>
+
+    <!-- ══ 2 — File creation time changed (T1070.006 timestomp) ═══════════════
+         Installers and updaters do this legitimately and often. Excluded by full
+         path only. Deliberately *not* excluding browsers: a browser that
+         timestomps a file in Startup is the interesting case. -->
+    <RuleGroup name="timestomping" groupRelation="or">
+      <FileCreateTime onmatch="exclude">
+        <Image condition="is">C:\Windows\System32\msiexec.exe</Image>
+        <Image condition="is">C:\Windows\SysWOW64\msiexec.exe</Image>
+        <Image condition="is">C:\Windows\System32\svchost.exe</Image>
+        <Image condition="is">C:\Program Files\Google\Chrome\Application\chrome.exe</Image>
+      </FileCreateTime>
+    </RuleGroup>
+
+    <!-- ══ 3 — Network connection ═════════════════════════════════════════════
+         `network_flow` already sees the packets; what it cannot see is *which
+         process* opened the socket, and that attribution is the whole reason to
+         run this event as well as capture.
+
+         Excluded: loopback, and the four local-discovery protocols that produce
+         constant broadcast noise on any office network. What that costs is
+         visibility of LLMNR/mDNS *poisoning* (T1557.001) from this host's own
+         point of view — a real technique, detected in CYPHRA from the responder
+         side in the DNS collector instead. SMB (445), NetBIOS session (139), RPC
+         (135), WinRM (5985/5986) and RDP (3389) are all left in: they are noisy
+         and they are also exactly how lateral movement travels. -->
+    <RuleGroup name="network connections" groupRelation="or">
+      <NetworkConnect onmatch="exclude">
+        <DestinationIp condition="is">127.0.0.1</DestinationIp>
+        <DestinationIp condition="is">::1</DestinationIp>
+        <DestinationPort condition="is">1900</DestinationPort>
+        <DestinationPort condition="is">3702</DestinationPort>
+        <DestinationPort condition="is">5353</DestinationPort>
+        <DestinationPort condition="is">5355</DestinationPort>
+      </NetworkConnect>
+    </RuleGroup>
+
+    <!-- ══ 6 — Driver load ════════════════════════════════════════════════════
+         Unfiltered. Volume is a handful per boot, and the technique that matters
+         here (T1068 bring-your-own-vulnerable-driver) uses a driver with a
+         *valid* Microsoft-countersigned signature — so filtering on
+         Signed=true would remove precisely the events worth having. -->
+    <RuleGroup name="driver load" groupRelation="or">
+      <DriverLoad onmatch="exclude" />
+    </RuleGroup>
+
+    <!-- ══ 7 — Image load ═════════════════════════════════════════════════════
+         The highest-volume event Sysmon has: thousands per minute, most of them
+         signed Microsoft DLLs into signed Microsoft processes. Include-only.
+
+         Three groups: anything not validly signed, then the specific DLLs whose
+         load *is* the technique, then loads out of user-writable directories.
+         `module_file_sha256` on these events is routed away from
+         `process_file_sha256` by the collector — attributing a malicious DLL's
+         hash to the host process would invert the T1574 detection it exists for. -->
+    <RuleGroup name="image load — unsigned or broken signature" groupRelation="or">
+      <ImageLoad onmatch="include">
+        <Signed condition="is">false</Signed>
+        <SignatureStatus condition="is not">Valid</SignatureStatus>
+      </ImageLoad>
+    </RuleGroup>
+    <RuleGroup name="image load — DLLs whose load is the technique" groupRelation="or">
+      <ImageLoad onmatch="include">
+        <!-- AMSI bypass (T1562.001): the provider DLL loading into a process that
+             has no business scanning anything, or being patched after load. -->
+        <ImageLoaded condition="end with">\amsi.dll</ImageLoaded>
+        <!-- Unmanaged CLR hosting (T1620) — .NET loaded into a native process. -->
+        <ImageLoaded condition="end with">\clr.dll</ImageLoaded>
+        <ImageLoaded condition="end with">\clrjit.dll</ImageLoaded>
+        <ImageLoaded condition="end with">\mscoree.dll</ImageLoaded>
+        <ImageLoaded condition="end with">\coreclr.dll</ImageLoaded>
+        <!-- PowerShell without powershell.exe (T1059.001 unmanaged runspace). -->
+        <ImageLoaded condition="end with">\System.Management.Automation.dll</ImageLoaded>
+        <ImageLoaded condition="end with">\System.Management.Automation.ni.dll</ImageLoaded>
+        <!-- Credential access surface (T1003, T1555): DPAPI, vault, LSA, SAM. -->
+        <ImageLoaded condition="end with">\vaultcli.dll</ImageLoaded>
+        <ImageLoaded condition="end with">\samlib.dll</ImageLoaded>
+        <ImageLoaded condition="end with">\cryptsp.dll</ImageLoaded>
+        <ImageLoaded condition="end with">\dpapi.dll</ImageLoaded>
+        <ImageLoaded condition="end with">\wlanapi.dll</ImageLoaded>
+        <!-- Remote execution and token theft primitives. -->
+        <ImageLoaded condition="end with">\wmiutils.dll</ImageLoaded>
+        <ImageLoaded condition="end with">\winhttp.dll</ImageLoaded>
+        <ImageLoaded condition="end with">\dsquery.dll</ImageLoaded>
+        <!-- Keylogging and screen capture. -->
+        <ImageLoaded condition="end with">\dxgi.dll</ImageLoaded>
+        <ImageLoaded condition="end with">\taskschd.dll</ImageLoaded>
+      </ImageLoad>
+    </RuleGroup>
+    <RuleGroup name="image load — from a user-writable directory" groupRelation="or">
+      <ImageLoad onmatch="include">
+        <ImageLoaded condition="contains">\AppData\Local\Temp\</ImageLoaded>
+        <ImageLoaded condition="contains">\AppData\Roaming\</ImageLoaded>
+        <ImageLoaded condition="contains">\Users\Public\</ImageLoaded>
+        <ImageLoaded condition="contains">\Windows\Temp\</ImageLoaded>
+        <ImageLoaded condition="contains">\ProgramData\</ImageLoaded>
+        <ImageLoaded condition="contains">\Downloads\</ImageLoaded>
+        <ImageLoaded condition="contains">\$Recycle.Bin\</ImageLoaded>
+      </ImageLoad>
+    </RuleGroup>
+
+    <!-- ══ 8 — CreateRemoteThread ═════════════════════════════════════════════
+         Classic injection (T1055.002/.003). Low volume; the two excludes below
+         are the only legitimate users on a normal desktop and both are
+         full-path. -->
+    <RuleGroup name="remote thread creation" groupRelation="or">
+      <CreateRemoteThread onmatch="exclude">
+        <SourceImage condition="is">C:\Windows\System32\wbem\WmiPrvSE.exe</SourceImage>
+        <SourceImage condition="is">C:\Windows\System32\svchost.exe</SourceImage>
+        <StartModule condition="is">C:\Windows\System32\kernel32.dll</StartModule>
+      </CreateRemoteThread>
+    </RuleGroup>
+
+    <!-- ══ 9 — RawAccessRead ══════════════════════════════════════════════════
+         Direct volume reads (T1006) — how SAM, SYSTEM and NTDS.dit get copied
+         past a file lock. Almost nothing legitimate does this outside of backup
+         and defragmentation. -->
+    <RuleGroup name="raw disk access" groupRelation="or">
+      <RawAccessRead onmatch="exclude">
+        <Image condition="is">C:\Windows\System32\dfrgui.exe</Image>
+        <Image condition="is">C:\Windows\System32\defrag.exe</Image>
+        <Image condition="is">C:\Windows\System32\svchost.exe</Image>
+      </RawAccessRead>
+    </RuleGroup>
+
+    <!-- ══ 10 — Process access ════════════════════════════════════════════════
+         Include-only and narrow: this event is expensive at scale. What is worth
+         paying for is any handle opened to LSASS (T1003.001) and to CYPHRA's own
+         processes, because a SOC agent that can be read or written by a
+         non-administrative process is not a control.
+
+         Deliberately *not* filtering on GrantedAccess masks. The published masks
+         (0x1010, 0x1410, 0x143a) enumerate what today's dumpers request, so a
+         mask filter detects the tools that already exist and nothing else. The
+         mask is on the event; let `detect/` reason about it, where the logic is
+         versioned and testable. -->
+    <RuleGroup name="handles to LSASS and to CYPHRA" groupRelation="or">
+      <ProcessAccess onmatch="include">
+        <TargetImage condition="is">C:\Windows\System32\lsass.exe</TargetImage>
+        <TargetImage condition="end with">\python.exe</TargetImage>
+        <TargetImage condition="end with">\veddb-server.exe</TargetImage>
+      </ProcessAccess>
+    </RuleGroup>
+    <RuleGroup name="known-benign LSASS readers, by full path only" groupRelation="or">
+      <ProcessAccess onmatch="exclude">
+        <SourceImage condition="is">C:\Windows\System32\wbem\WmiPrvSE.exe</SourceImage>
+        <SourceImage condition="is">C:\Windows\System32\svchost.exe</SourceImage>
+        <SourceImage condition="is">C:\Windows\System32\csrss.exe</SourceImage>
+        <SourceImage condition="is">C:\Windows\System32\wininit.exe</SourceImage>
+        <SourceImage condition="is">C:\Windows\System32\services.exe</SourceImage>
+        <SourceImage condition="is">C:\Windows\System32\MsMpEng.exe</SourceImage>
+        <SourceImage condition="is">C:\ProgramData\Microsoft\Windows Defender\Platform\MsMpEng.exe</SourceImage>
+      </ProcessAccess>
+    </RuleGroup>
+
+    <!-- ══ 11 — File create ══════════════════════════════════════════════════
+         Include-only. Three things are worth the volume: writes to persistence
+         locations, executable and script content dropped where a user can write,
+         and the artifacts of specific techniques. -->
+    <RuleGroup name="file create — persistence locations" groupRelation="or">
+      <FileCreate onmatch="include">
+        <TargetFilename condition="contains">\Start Menu\Programs\Startup\</TargetFilename>
+        <TargetFilename condition="contains">\Windows\System32\Tasks\</TargetFilename>
+        <TargetFilename condition="contains">\Windows\Tasks\</TargetFilename>
+        <TargetFilename condition="contains">\Windows\System32\GroupPolicy\</TargetFilename>
+        <TargetFilename condition="contains">\Windows\System32\drivers\</TargetFilename>
+        <TargetFilename condition="contains">\Windows\System32\spool\drivers\</TargetFilename>
+        <TargetFilename condition="contains">\Windows\System32\wbem\</TargetFilename>
+        <TargetFilename condition="contains">\Microsoft\Windows\PowerShell\PSReadLine\</TargetFilename>
+        <TargetFilename condition="contains">\Documents\WindowsPowerShell\</TargetFilename>
+      </FileCreate>
+    </RuleGroup>
+    <RuleGroup name="file create — executable or script content in a writable place" groupRelation="or">
+      <FileCreate onmatch="include">
+        <!-- Extension pairs the two ways round: a match on either the risky
+             extension or the writable directory is enough on its own, because
+             groupRelation="or" makes each element independent. Narrowing to
+             "risky extension AND writable directory" would need a compound rule
+             per pair and would miss a .dll dropped into System32. -->
+        <TargetFilename condition="end with">.ps1</TargetFilename>
+        <TargetFilename condition="end with">.psm1</TargetFilename>
+        <TargetFilename condition="end with">.bat</TargetFilename>
+        <TargetFilename condition="end with">.cmd</TargetFilename>
+        <TargetFilename condition="end with">.vbs</TargetFilename>
+        <TargetFilename condition="end with">.vbe</TargetFilename>
+        <TargetFilename condition="end with">.js</TargetFilename>
+        <TargetFilename condition="end with">.jse</TargetFilename>
+        <TargetFilename condition="end with">.wsf</TargetFilename>
+        <TargetFilename condition="end with">.wsh</TargetFilename>
+        <TargetFilename condition="end with">.hta</TargetFilename>
+        <TargetFilename condition="end with">.lnk</TargetFilename>
+        <TargetFilename condition="end with">.scr</TargetFilename>
+        <TargetFilename condition="end with">.pif</TargetFilename>
+        <TargetFilename condition="end with">.cpl</TargetFilename>
+        <TargetFilename condition="end with">.msi</TargetFilename>
+        <TargetFilename condition="end with">.msp</TargetFilename>
+        <TargetFilename condition="end with">.msc</TargetFilename>
+        <TargetFilename condition="end with">.jar</TargetFilename>
+        <TargetFilename condition="end with">.iso</TargetFilename>
+        <TargetFilename condition="end with">.img</TargetFilename>
+        <TargetFilename condition="end with">.vhd</TargetFilename>
+        <TargetFilename condition="end with">.vhdx</TargetFilename>
+        <!-- Office macro-enabled formats, which is how the chain usually starts. -->
+        <TargetFilename condition="end with">.docm</TargetFilename>
+        <TargetFilename condition="end with">.xlsm</TargetFilename>
+        <TargetFilename condition="end with">.pptm</TargetFilename>
+        <TargetFilename condition="end with">.xll</TargetFilename>
+        <TargetFilename condition="end with">.xlam</TargetFilename>
+      </FileCreate>
+    </RuleGroup>
+    <RuleGroup name="file create — technique artifacts" groupRelation="or">
+      <FileCreate onmatch="include">
+        <!-- Credential store copies (T1003.002/.003) and dump files. -->
+        <TargetFilename condition="end with">.dmp</TargetFilename>
+        <TargetFilename condition="end with">\NTDS.dit</TargetFilename>
+        <TargetFilename condition="contains">\Temp\SAM</TargetFilename>
+        <!-- Ransomware note and staging patterns (T1486). -->
+        <TargetFilename condition="contains">DECRYPT</TargetFilename>
+        <TargetFilename condition="contains">RECOVER</TargetFilename>
+        <TargetFilename condition="contains">README_TO_RESTORE</TargetFilename>
+        <!-- Archive built for exfiltration (T1560) in a user directory. -->
+        <TargetFilename condition="end with">.7z</TargetFilename>
+        <TargetFilename condition="end with">.rar</TargetFilename>
+        <!-- WER and prefetch removal is a defence-evasion signal in itself. -->
+        <TargetFilename condition="contains">\Windows\Prefetch\</TargetFilename>
+      </FileCreate>
+    </RuleGroup>
+
+    <!-- ══ 12/13/14 — Registry ════════════════════════════════════════════════
+         Include-only; unfiltered registry is unusable. `TargetObject` is matched
+         with `contains` rather than `begin with` throughout, because Sysmon
+         renders per-user keys as HKU\<SID>\… — a `begin with "HKCU"` rule matches
+         nothing at all, which is the most common error in a hand-written Sysmon
+         config and is silent. -->
+    <RuleGroup name="registry — autostart and service persistence" groupRelation="or">
+      <RegistryEvent onmatch="include">
+        <TargetObject condition="contains">\CurrentVersion\Run</TargetObject>
+        <TargetObject condition="contains">\CurrentVersion\RunOnce</TargetObject>
+        <TargetObject condition="contains">\CurrentVersion\RunServices</TargetObject>
+        <TargetObject condition="contains">\CurrentVersion\Explorer\Shell Folders</TargetObject>
+        <TargetObject condition="contains">\CurrentVersion\Explorer\User Shell Folders</TargetObject>
+        <TargetObject condition="contains">\CurrentVersion\Winlogon\</TargetObject>
+        <TargetObject condition="contains">\CurrentVersion\Windows\AppInit_DLLs</TargetObject>
+        <TargetObject condition="contains">\CurrentVersion\Windows\Load</TargetObject>
+        <TargetObject condition="contains">\CurrentVersion\Windows\Run</TargetObject>
+        <TargetObject condition="contains">\Image File Execution Options\</TargetObject>
+        <TargetObject condition="contains">\SilentProcessExit\</TargetObject>
+        <TargetObject condition="contains">\CurrentControlSet\Services\</TargetObject>
+        <TargetObject condition="contains">\CurrentVersion\Policies\Explorer\Run</TargetObject>
+        <TargetObject condition="contains">\Environment\UserInitMprLogonScript</TargetObject>
+        <TargetObject condition="contains">\Control\Session Manager\BootExecute</TargetObject>
+        <TargetObject condition="contains">\Control\Lsa\</TargetObject>
+        <TargetObject condition="contains">\Control\SecurityProviders\</TargetObject>
+        <TargetObject condition="contains">\Control\Print\Monitors\</TargetObject>
+        <TargetObject condition="contains">\Control\Terminal Server\Wds\</TargetObject>
+        <TargetObject condition="contains">\CurrentVersion\Authentication\</TargetObject>
+      </RegistryEvent>
+    </RuleGroup>
+    <RuleGroup name="registry — COM and shell hijack" groupRelation="or">
+      <RegistryEvent onmatch="include">
+        <TargetObject condition="contains">\InprocServer32\</TargetObject>
+        <TargetObject condition="contains">\LocalServer32\</TargetObject>
+        <TargetObject condition="contains">\TreatAs\</TargetObject>
+        <TargetObject condition="contains">\ShellEx\ContextMenuHandlers\</TargetObject>
+        <TargetObject condition="contains">\Shell\Open\Command</TargetObject>
+        <TargetObject condition="contains">\ms-settings\</TargetObject>
+        <TargetObject condition="contains">\mscfile\</TargetObject>
+        <TargetObject condition="contains">\Exefile\Shell\</TargetObject>
+        <TargetObject condition="contains">\Folder\Shell\</TargetObject>
+      </RegistryEvent>
+    </RuleGroup>
+    <RuleGroup name="registry — security control tampering" groupRelation="or">
+      <RegistryEvent onmatch="include">
+        <!-- Defender being turned off or told to ignore a path (T1562.001). The
+             exclusion-path key is the one that matters most and is the one least
+             often watched. -->
+        <TargetObject condition="contains">\Windows Defender\Exclusions\</TargetObject>
+        <TargetObject condition="contains">\Windows Defender\DisableAntiSpyware</TargetObject>
+        <TargetObject condition="contains">\Windows Defender\Real-Time Protection\</TargetObject>
+        <TargetObject condition="contains">\Windows Defender\Features\</TargetObject>
+        <TargetObject condition="contains">\Windows Defender Security Center\</TargetObject>
+        <TargetObject condition="contains">\Policies\Microsoft\Windows Defender\</TargetObject>
+        <!-- Firewall, UAC, ETW, event log, script block logging. -->
+        <TargetObject condition="contains">\SharedAccess\Parameters\FirewallPolicy\</TargetObject>
+        <TargetObject condition="contains">\Policies\System\EnableLUA</TargetObject>
+        <TargetObject condition="contains">\Policies\System\ConsentPromptBehaviorAdmin</TargetObject>
+        <TargetObject condition="contains">\Policies\System\LocalAccountTokenFilterPolicy</TargetObject>
+        <TargetObject condition="contains">\WMI\Autologger\</TargetObject>
+        <TargetObject condition="contains">\Services\EventLog\</TargetObject>
+        <TargetObject condition="contains">\PowerShell\ScriptBlockLogging\</TargetObject>
+        <TargetObject condition="contains">\PowerShell\Transcription\</TargetObject>
+        <!-- Cleartext credential caching re-enabled (T1003.001 via WDigest). -->
+        <TargetObject condition="contains">\WDigest\UseLogonCredential</TargetObject>
+        <TargetObject condition="contains">\Control\Lsa\RunAsPPL</TargetObject>
+        <!-- RDP enabled, and Office macro protections removed. -->
+        <TargetObject condition="contains">\Terminal Server\fDenyTSConnections</TargetObject>
+        <TargetObject condition="contains">\Office\</TargetObject>
+        <!-- Sysmon's own configuration and driver. -->
+        <TargetObject condition="contains">\Services\SysmonDrv\</TargetObject>
+        <TargetObject condition="contains">\Services\Sysmon</TargetObject>
+      </RegistryEvent>
+    </RuleGroup>
+
+    <!-- ══ 15 — Alternate data stream created ═════════════════════════════════
+         Zone.Identifier is mark-of-the-web: its presence on a dropped executable
+         is what says "this came from the internet", and its *removal* is T1553.005.
+         The stream contents are hashed, so the same file arriving by four routes
+         collapses to one artifact in the case. -->
+    <RuleGroup name="alternate data streams" groupRelation="or">
+      <FileCreateStreamHash onmatch="include">
+        <TargetFilename condition="contains">\Downloads\</TargetFilename>
+        <TargetFilename condition="contains">\AppData\Local\Temp\</TargetFilename>
+        <TargetFilename condition="contains">\Start Menu\Programs\Startup\</TargetFilename>
+        <TargetFilename condition="end with">.exe</TargetFilename>
+        <TargetFilename condition="end with">.dll</TargetFilename>
+        <TargetFilename condition="end with">.ps1</TargetFilename>
+        <TargetFilename condition="end with">.hta</TargetFilename>
+      </FileCreateStreamHash>
+    </RuleGroup>
+
+    <!-- ══ 17/18 — Named pipes ════════════════════════════════════════════════
+         An SMB beacon is a named pipe (T1572), and PsExec, Cobalt Strike's default
+         pipe patterns and Impacket's remote-service execution all show here.
+         Volume is moderate; the excludes are the pipes Windows itself creates
+         thousands of. Note these are exclusions by *pipe name*, which an attacker
+         does control — so each one is a name they could adopt to hide. They are
+         accepted anyway, because without them the event is unusable, and
+         `detect/` compensates by scoring on the creating process as well. -->
+    <RuleGroup name="named pipes" groupRelation="or">
+      <PipeEvent onmatch="exclude">
+        <PipeName condition="begin with">\Anonymous Pipe</PipeName>
+        <PipeName condition="begin with">\PSHost.</PipeName>
+        <PipeName condition="begin with">\wkssvc</PipeName>
+        <PipeName condition="begin with">\lsass</PipeName>
+        <PipeName condition="begin with">\srvsvc</PipeName>
+        <PipeName condition="begin with">\netlogon</PipeName>
+        <PipeName condition="begin with">\Winsock2\CatalogChangeListener</PipeName>
+        <PipeName condition="begin with">\LOCAL\</PipeName>
+        <PipeName condition="begin with">\crashpad_</PipeName>
+        <PipeName condition="begin with">\chrome.</PipeName>
+        <PipeName condition="begin with">\mojo.</PipeName>
+      </PipeEvent>
+    </RuleGroup>
+
+    <!-- ══ 19/20/21 — WMI subscriptions ═══════════════════════════════════════
+         Unfiltered. A permanent WMI event consumer (T1546.003) is rare enough
+         that every one of these deserves to be looked at, and it is one of the
+         few persistence mechanisms that survives without touching disk or the
+         Run keys. -->
+    <RuleGroup name="WMI persistence" groupRelation="or">
+      <WmiEvent onmatch="exclude" />
+    </RuleGroup>
+
+    <!-- ══ 22 — DNS query ═════════════════════════════════════════════════════
+         Process-attributed name resolution: the query, the answers, and which
+         binary asked. DNS tunnelling, DGA beaconing and the first move of nearly
+         every intrusion are all here.
+
+         Excluded only by suffixes the adversary cannot register. No CDN or cloud
+         storage suffix is excluded — blob.core.windows.net, s3.amazonaws.com,
+         *.workers.dev and *.trycloudflare.com all take arbitrary customer
+         subdomains, so excluding them is handing out a free covert channel. -->
+    <RuleGroup name="DNS queries" groupRelation="or">
+      <DnsQuery onmatch="exclude">
+        <QueryName condition="end with">.microsoft.com</QueryName>
+        <QueryName condition="end with">.windowsupdate.com</QueryName>
+        <QueryName condition="end with">.windows.com</QueryName>
+        <QueryName condition="end with">.msftncsi.com</QueryName>
+        <QueryName condition="end with">.msftconnecttest.com</QueryName>
+        <QueryName condition="end with">.office365.com</QueryName>
+        <QueryName condition="end with">.office.com</QueryName>
+        <QueryName condition="end with">.microsoftonline.com</QueryName>
+        <QueryName condition="end with">.in-addr.arpa</QueryName>
+        <QueryName condition="end with">.ip6.arpa</QueryName>
+        <QueryName condition="is">localhost</QueryName>
+      </DnsQuery>
+    </RuleGroup>
+
+    <!-- ══ 25 — Process tampering ═════════════════════════════════════════════
+         Process hollowing and herpaderping (T1055.012) — the image on disk no
+         longer matches the image in memory. Very low volume, very high value,
+         unfiltered. -->
+    <RuleGroup name="process image tampering" groupRelation="or">
+      <ProcessTampering onmatch="exclude" />
+    </RuleGroup>
+
+    <!-- ══ 26 — File delete detected (no archiving) ═══════════════════════════
+         Indicator removal (T1070) and ransomware's own cleanup. Include-only, and
+         scoped to content whose deletion is meaningful: executables, scripts,
+         logs and shadow-copy artifacts. Deleting a build output is not an
+         incident, and on this host there are a great many of those. -->
+    <RuleGroup name="file deletion" groupRelation="or">
+      <FileDeleteDetected onmatch="include">
+        <TargetFilename condition="end with">.exe</TargetFilename>
+        <TargetFilename condition="end with">.dll</TargetFilename>
+        <TargetFilename condition="end with">.sys</TargetFilename>
+        <TargetFilename condition="end with">.ps1</TargetFilename>
+        <TargetFilename condition="end with">.bat</TargetFilename>
+        <TargetFilename condition="end with">.vbs</TargetFilename>
+        <TargetFilename condition="end with">.hta</TargetFilename>
+        <TargetFilename condition="end with">.evtx</TargetFilename>
+        <TargetFilename condition="contains">\Windows\System32\winevt\</TargetFilename>
+        <TargetFilename condition="contains">\Start Menu\Programs\Startup\</TargetFilename>
+        <TargetFilename condition="contains">\Windows\System32\Tasks\</TargetFilename>
+      </FileDeleteDetected>
+    </RuleGroup>
+
+    <!-- ══ 29 — Executable file detected ══════════════════════════════════════
+         Fires when a PE lands on disk, hashed at write time — which closes the
+         window where a dropper writes, executes and deletes faster than any
+         scheduled scan. Scoped to user-writable directories, where a new
+         executable is unexpected; System32 sees new PEs on every patch Tuesday.
+         Needs schemaversion 4.90 (Sysmon 15.0+); delete this group for 4.82. -->
+    <RuleGroup name="new executable on disk" groupRelation="or">
+      <FileExecutableDetected onmatch="include">
+        <TargetFilename condition="contains">\AppData\Local\Temp\</TargetFilename>
+        <TargetFilename condition="contains">\AppData\Roaming\</TargetFilename>
+        <TargetFilename condition="contains">\Downloads\</TargetFilename>
+        <TargetFilename condition="contains">\Users\Public\</TargetFilename>
+        <TargetFilename condition="contains">\Windows\Temp\</TargetFilename>
+        <TargetFilename condition="contains">\ProgramData\</TargetFilename>
+        <TargetFilename condition="contains">\$Recycle.Bin\</TargetFilename>
+        <TargetFilename condition="contains">\Windows\System32\Tasks\</TargetFilename>
+      </FileExecutableDetected>
+    </RuleGroup>
+
+  </EventFiltering>
+</Sysmon>

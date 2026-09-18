@@ -188,13 +188,14 @@ class AuditReport:
 
 
 PACKAGES = (
-    "core.config", "core.schema.ocsf",
+    "core.config", "core.audit", "core.schema.ocsf",
     "ingest.connectors", "ingest.agent",
     "detect", "detect.rules", "detect.ml",
     "correlate", "enrich", "entities", "intel",
     "learn", "triage", "respond", "respond.actions", "respond.playbooks",
     "hunt", "validate",
     "cases", "metrics", "compliance", "crisis",
+    "llm", "llm.client", "llm.circuit", "llm.prompts", "llm.runner",
     "socctl",
 )
 

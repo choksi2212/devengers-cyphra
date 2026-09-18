@@ -1,0 +1,20 @@
+var/
+
+# The raw ATT&CK STIX bundle is 51 MB and fully reproducible: `attack_index.json`
+# records the sha256 it was built from, so the index is committed and the bundle
+# is fetched on demand. Rebuild with:
+#   curl -sSL -o vendor/attack/enterprise-attack.json \
+#     https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json
+#   python -m core.schema.attack build
+vendor/attack/enterprise-attack.json
+
+# Same arrangement for OCSF: 4.6 MB of cached schema-server responses (the six
+# top-level ones plus objects/*.json, one per object) reduce to a 0.38 MB
+# `ocsf_index.json`, which records their combined sha256 in `source_sha256` and
+# the URLs in `built_from`. The index is committed; the cache is fetched on
+# demand and the rebuild from it is byte-identical, which tests/scratch_ocsf.py
+# asserts. Refetch and rebuild with:
+#   python -m core.schema.ocsf fetch
+#   python -m core.schema.ocsf build
+vendor/ocsf/_*.json
+vendor/ocsf/objects/

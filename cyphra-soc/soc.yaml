@@ -1,0 +1,96 @@
+# CYPHRA-SOC configuration
+# ─────────────────────────────────────────────────────────────────────────────
+# Everything here is optional — the defaults in `core/config.py` apply when a
+# key is absent. Environment variables override this file:
+#   CYPHRA_SOC_<SECTION>_<FIELD>   e.g. CYPHRA_SOC_RESPOND_MODE=enforce
+#
+# Credentials: prefer the environment. This loader does NOT interpolate
+# `${VAR}`, and treats such a value as unset rather than authenticating with a
+# literal dollar sign — so putting `api_key: ${OKTA_API_TOKEN}` here silently
+# gives you nothing. Set the env var instead, or paste the literal value.
+#
+# Unset credentials are inert, not broken. The adversary-emulation generator
+# produces schema-correct events for every source, so all 13 SOC functions are
+# verifiable before a real tenant is connected. An unconfigured connector
+# reports "unconfigured" — never "healthy".
+#
+# Run `python -m core.config` from cyphra-soc/ to print the readiness report.
+
+store:
+  veddb_host: 127.0.0.1
+  veddb_port: 50051
+  veddb_pool_size: 8
+  veddb_namespace: soc
+  duckdb_memory_limit: 2GB
+  duckdb_threads: 4
+  retention_hot_days: 7
+  retention_warm_days: 90
+  retention_cold_days: 400
+
+audit:
+  checkpoint_every: 500
+  verify_on_start: true
+
+ingest:
+  batch_max_events: 500
+  batch_max_seconds: 2.0
+  queue_max_events: 50000
+  agent_listen_host: 127.0.0.1
+  agent_listen_port: 8443
+  # A source silent for (its cadence × this) is dead, not quiet.
+  health_stale_multiplier: 3.0
+  health_check_seconds: 30.0
+
+detect:
+  binary_threshold: 0.52
+  # A single flow over threshold is a signal, not an alert. At production
+  # prevalence a per-flow blocker is wrong about half the time; entity-level
+  # accumulation is what makes autonomy safe. See the plan's base-rate note.
+  min_signals_per_entity: 3
+  baseline_window_days: 14
+  baseline_min_observations: 50
+
+llm:
+  provider: vultr
+  base_url: https://api.vultrinference.com/v1
+  model: llama-3.1-70b-instruct
+  temperature: 0.0
+  max_tokens: 1024
+  max_calls_per_case: 12
+  # api_key: set $VULTR_INFERENCE_API_KEY
+
+respond:
+  # "shadow" records intended actions and executes nothing. This is the default
+  # on purpose: a responder whose first production act is a live block is an
+  # outage waiting for a trigger. Flip to "enforce" only after the Phase 5 and
+  # Phase 7 gates are green on this host.
+  mode: shadow
+  max_actions_per_minute: 10
+  max_actions_per_hour: 60
+  breaker_consecutive_failures: 3
+  protected_cidrs:
+    - 127.0.0.0/8
+    - "::1/128"
+    - 169.254.0.0/16
+  approval_required_above_blast_radius: 5
+  approval_timeout_minutes: 30
+
+# ── Credential slots ────────────────────────────────────────────────────────
+# Left empty deliberately. Set the corresponding environment variable; the name
+# is printed next to each slot by `python -m core.config`.
+
+connectors:
+  entra: {}       # ENTRA_TENANT_ID, ENTRA_CLIENT_ID, ENTRA_CLIENT_SECRET
+  okta: {}        # OKTA_DOMAIN, OKTA_API_TOKEN
+  defender: {}    # DEFENDER_TENANT_ID, DEFENDER_CLIENT_ID, DEFENDER_CLIENT_SECRET
+  crowdstrike: {} # CROWDSTRIKE_CLIENT_ID, CROWDSTRIKE_CLIENT_SECRET
+  aws: {}         # AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
+  azure: {}       # AZURE_SUBSCRIPTION_ID
+  gcp: {}         # GOOGLE_APPLICATION_CREDENTIALS, GCP_PROJECT_ID
+  m365: {}        # M365_TENANT_ID, M365_CLIENT_ID, M365_CLIENT_SECRET
+  gws: {}         # GWS_DELEGATED_SUBJECT
+
+intel:
+  otx: {}         # OTX_API_KEY
+  virustotal: {}  # VIRUSTOTAL_API_KEY
+  misp: {}        # MISP_URL, MISP_API_KEY
